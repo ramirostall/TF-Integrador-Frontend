@@ -60,10 +60,6 @@ export function UsuariosPage() {
         })
     }, [usuarios, busqueda])
 
-    useEffect(() => {
-        setPaginaActual(1)
-    }, [busqueda])
-
     const totalPaginas = Math.max(
         1,
         Math.ceil(usuariosFiltrados.length / ELEMENTOS_POR_PAGINA),
@@ -133,7 +129,10 @@ export function UsuariosPage() {
                         type="search"
                         placeholder="Buscar por ID, email, rol o estado..."
                         value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
+                        onChange={(e) => {
+                            setBusqueda(e.target.value)
+                            setPaginaActual(1)
+                        }}
                         aria-label="Buscar usuarios"
                         style={{ maxWidth: '320px' }}
                     />

@@ -58,10 +58,6 @@ export function PacientesPage() {
         })
     }, [pacientes, busqueda])
 
-    useEffect(() => {
-        setPaginaActual(1)
-    }, [busqueda])
-
     const totalPaginas = Math.max(
         1,
         Math.ceil(pacientesFiltrados.length / ELEMENTOS_POR_PAGINA),
@@ -92,7 +88,10 @@ export function PacientesPage() {
                         type="search"
                         placeholder="Buscar por nombre, apellido, DNI, email o teléfono..."
                         value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
+                        onChange={(e) => {
+                            setBusqueda(e.target.value)
+                            setPaginaActual(1)
+                        }}
                         aria-label="Buscar pacientes"
                         style={{ maxWidth: '360px' }}
                     />

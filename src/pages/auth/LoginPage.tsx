@@ -62,6 +62,12 @@ export function LoginPage() {
                     />
                 </div>
 
+                <p>
+                    <Link to="/olvidar-password">
+                        ¿Olvidaste tu contraseña?
+                    </Link>
+                </p>
+
                 {error && (
                     <p role="alert" className="mensaje-error">
                         {error}

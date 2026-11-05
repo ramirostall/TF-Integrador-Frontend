@@ -4,6 +4,8 @@ import { RutaProtegida } from './components/RutaProtegida'
 import { RutaPorRol } from './components/RutaPorRol'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegistroPacientePage } from './pages/auth/RegistroPacientePage'
+import { OlvidarPasswordPage } from './pages/auth/OlvidarPasswordPage'
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { InicioPage } from './pages/InicioPage'
 import { MiCuentaPage } from './pages/usuarios/MiCuentaPage'
 import PerfilPacientePage from './pages/pacientes/PerfilPacientePage'
@@ -19,6 +21,11 @@ function App() {
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/registro" element={<RegistroPacientePage />} />
+                <Route
+                    path="/olvidar-password"
+                    element={<OlvidarPasswordPage />}
+                />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
 
                 <Route
                     path="/"

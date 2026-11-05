@@ -6,12 +6,39 @@ export interface Credenciales {
     password: string
 }
 
+export interface MensajeRespuesta {
+    mensaje: string
+}
+
 export async function iniciarSesion(
     credenciales: Credenciales,
 ): Promise<RespuestaLogin> {
     const respuesta = await api.post<RespuestaLogin>(
         '/auth/login',
         credenciales,
+    )
+
+    return respuesta.data
+}
+
+export async function solicitarRecuperacion(
+    email: string,
+): Promise<MensajeRespuesta> {
+    const respuesta = await api.post<MensajeRespuesta>(
+        '/auth/forgot-password',
+        { email },
+    )
+
+    return respuesta.data
+}
+
+export async function restablecerPassword(datos: {
+    token: string
+    password: string
+}): Promise<MensajeRespuesta> {
+    const respuesta = await api.post<MensajeRespuesta>(
+        '/auth/reset-password',
+        datos,
     )
 
     return respuesta.data

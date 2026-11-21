@@ -127,37 +127,39 @@ function App() {
                             </RutaPorRol>
                         }
                     />
+
+                    {/* === Autorizaciones dentro del Layout (barra de arriba) === */}
+                    <Route
+                        path="autorizaciones"
+                        element={
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
+                                <AutorizacionesPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="autorizaciones/nuevo"
+                        element={
+                            <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
+                                <CrearAutorizacionPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="autorizaciones/:id"
+                        element={
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
+                                <DetalleAutorizacionPage />
+                            </RutaPorRol>
+                        }
+                    />
                 </Route>
-                <Route
-                    path="autorizaciones"
-                    element={
-                        <RutaPorRol
-                            roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
-                        >
-                            <AutorizacionesPage />
-                        </RutaPorRol>
-                    }
-                />
-
-                <Route
-                    path="autorizaciones/nuevo"
-                    element={
-                        <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
-                            <CrearAutorizacionPage />
-                        </RutaPorRol>
-                    }
-                />
-
-                <Route
-                    path="autorizaciones/:id"
-                    element={
-                        <RutaPorRol
-                            roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
-                        >
-                            <DetalleAutorizacionPage />
-                        </RutaPorRol>
-                    }
-                />
 
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

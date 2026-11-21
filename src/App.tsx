@@ -17,6 +17,9 @@ import { DetallePacientePage } from './pages/pacientes/DetallePacientePage'
 import { EstudiosPage } from './pages/estudios/EstudiosPage'
 import { CrearEstudioPage } from './pages/estudios/CrearEstudioPage'
 import { DetalleEstudioPage } from './pages/estudios/DetalleEstudioPage'
+import { AutorizacionesPage } from './pages/autorizacionEstudios/AutorizacionesPage'
+import { CrearAutorizacionPage } from './pages/autorizacionEstudios/CrearAutorizacionPage'
+import { DetalleAutorizacionPage } from './pages/autorizacionEstudios/DetalleAutorizacionPage'
 
 function App() {
     return (
@@ -125,6 +128,36 @@ function App() {
                         }
                     />
                 </Route>
+                <Route
+                    path="autorizaciones"
+                    element={
+                        <RutaPorRol
+                            roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                        >
+                            <AutorizacionesPage />
+                        </RutaPorRol>
+                    }
+                />
+
+                <Route
+                    path="autorizaciones/nuevo"
+                    element={
+                        <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
+                            <CrearAutorizacionPage />
+                        </RutaPorRol>
+                    }
+                />
+
+                <Route
+                    path="autorizaciones/:id"
+                    element={
+                        <RutaPorRol
+                            roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                        >
+                            <DetalleAutorizacionPage />
+                        </RutaPorRol>
+                    }
+                />
 
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

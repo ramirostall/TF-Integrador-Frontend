@@ -49,3 +49,16 @@ export interface RespuestaArchivo {
     url: string
     expiresIn: number
 }
+
+export interface CrearAutorizacionEstudio {
+    estudioId: number
+    profesionalId: number
+    fechaAutorizacion: string
+    fechaVencimiento: string
+}
+
+export interface VigenciaAutorizacion {
+    id: number
+    estaVigente: boolean
+    estaVencida: boolean
+}

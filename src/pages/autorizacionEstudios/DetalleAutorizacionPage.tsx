@@ -29,7 +29,8 @@ export function DetalleAutorizacionPage() {
 
     const usuario = obtenerUsuarioGuardado()
     const rol = usuario?.rol
-    const puedeRevocar = rol === 'ADMIN' || rol === 'PROFESIONAL'
+    const puedeRevocar =
+        rol === 'ADMIN' || rol === 'PROFESIONAL' || rol === 'PACIENTE'
 
     useEffect(() => {
         if (Number.isNaN(autorizacionId)) return
@@ -122,7 +123,8 @@ export function DetalleAutorizacionPage() {
                             Estudio
                         </td>
                         <td style={{ padding: '6px 0' }}>
-                            {autorizacion.estudioId}
+                            {autorizacion.estudio?.tipo ??
+                                `#${autorizacion.estudioId}`}
                         </td>
                     </tr>
                     <tr>

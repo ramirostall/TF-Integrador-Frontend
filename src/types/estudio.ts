@@ -22,6 +22,7 @@ export interface AutorizacionEstudio {
     fechaVencimiento: string
     estado: EstadoAutorizacion
     profesional?: ProfesionalEstudio
+    estudio?: Pick<Estudio, 'id' | 'tipo'>
 }
 
 export interface Estudio {

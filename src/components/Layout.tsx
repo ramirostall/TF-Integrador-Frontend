@@ -24,6 +24,13 @@ export function Layout() {
 
                     <Link to="/estudios">Estudios</Link>
 
+                    {/* Enlace al módulo de autorizaciones */}
+                    {(usuario?.rol === 'ADMIN' ||
+                        usuario?.rol === 'PROFESIONAL' ||
+                        usuario?.rol === 'PACIENTE') && (
+                        <Link to="/autorizaciones">Autorizaciones</Link>
+                    )}
+
                     {usuario?.rol === 'ADMIN' && (
                         <>
                             <Link to="/usuarios">Usuarios</Link>

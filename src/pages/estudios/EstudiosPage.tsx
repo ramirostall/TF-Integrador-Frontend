@@ -142,6 +142,17 @@ export function EstudiosPage() {
                     <Link to="/estudios/nuevo">Crear estudio</Link>
                 </p>
             )}
+            {esAdmin && (
+                <p>
+                    <Link to="/estudios/nuevo">Crear estudio</Link>
+                </p>
+            )}
+
+            {(esAdmin || esProfesional || esPaciente) && (
+                <p>
+                    <Link to="/autorizaciones">Gestionar autorizaciones</Link>
+                </p>
+            )}
 
             {esAdmin && pacienteIdFiltro && (
                 <p>

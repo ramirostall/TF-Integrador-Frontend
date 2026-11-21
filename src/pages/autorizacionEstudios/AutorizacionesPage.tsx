@@ -5,7 +5,11 @@ import {
     listarAutorizaciones,
     revocarAutorizacion,
 } from '../../services/autorizacionEstudioService'
-import { listarEstudios } from '../../services/estudioService'
+import {
+    listarEstudios,
+    listarEstudiosPaciente,
+} from '../../services/estudioService'
+import { obtenerMiPerfil } from '../../services/pacienteService'
 import type { AutorizacionEstudio, Estudio } from '../../types/estudio'
 import { obtenerMensajeError } from '../../utils/errores'
 
@@ -38,7 +42,11 @@ export function AutorizacionesPage() {
 
                 const [listaAutorizaciones, listaEstudios] = await Promise.all([
                     listarAutorizaciones(),
-                    listarEstudios(),
+                    esPaciente
+                        ? obtenerMiPerfil().then((perfil) =>
+                              listarEstudiosPaciente(perfil.id),
+                          )
+                        : listarEstudios(),
                 ])
 
                 setAutorizaciones(listaAutorizaciones)
@@ -58,7 +66,7 @@ export function AutorizacionesPage() {
         }
 
         cargar()
-    }, [rol])
+    }, [rol, esPaciente])
 
     const estudioPorId = useMemo(() => {
         const mapa = new Map<number, string>()
@@ -126,7 +134,7 @@ export function AutorizacionesPage() {
         <main>
             <h1>Autorizaciones de Estudio</h1>
 
-            {(esAdmin || esProfesional) && (
+            {(esAdmin || esProfesional || esPaciente) && (
                 <p>
                     <Link to="/autorizaciones/nuevo">Nueva autorización</Link>
                 </p>
@@ -217,7 +225,9 @@ export function AutorizacionesPage() {
                                             >
                                                 Ver
                                             </Link>
-                                            {(esAdmin || esProfesional) &&
+                                            {(esAdmin ||
+                                                esProfesional ||
+                                                esPaciente) &&
                                                 a.estado === 'DISPONIBLE' && (
                                                     <button
                                                         type="button"

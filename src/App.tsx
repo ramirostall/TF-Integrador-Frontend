@@ -113,7 +113,7 @@ function App() {
                     <Route
                         path="estudios/nuevo"
                         element={
-                            <RutaPorRol roles={['ADMIN']}>
+                            <RutaPorRol roles={['ADMIN', 'PACIENTE']}>
                                 <CrearEstudioPage />
                             </RutaPorRol>
                         }
@@ -122,7 +122,9 @@ function App() {
                     <Route
                         path="estudios/:id"
                         element={
-                            <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
                                 <DetalleEstudioPage />
                             </RutaPorRol>
                         }
@@ -143,7 +145,9 @@ function App() {
                     <Route
                         path="autorizaciones/nuevo"
                         element={
-                            <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
                                 <CrearAutorizacionPage />
                             </RutaPorRol>
                         }

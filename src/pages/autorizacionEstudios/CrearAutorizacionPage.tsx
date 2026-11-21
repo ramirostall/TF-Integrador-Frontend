@@ -1,21 +1,20 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { obtenerUsuarioGuardado } from '../../services/authService'
-import { listarEstudios } from '../../services/estudioService'
+import {
+    listarEstudios,
+    listarEstudiosPaciente,
+} from '../../services/estudioService'
 import { crearAutorizacion } from '../../services/autorizacionEstudioService'
+import { obtenerMiPerfil } from '../../services/pacienteService'
+import { listarProfesionales } from '../../services/profesionalService'
+import type { ProfesionalOpcion } from '../../services/profesionalService'
 import type { Estudio } from '../../types/estudio'
 import { obtenerMensajeError } from '../../utils/errores'
 
-export interface ProfesionalOpcion {
-    id: number
-    nombre: string
-    apellido: string
-    especialidad: string
-}
-
 export function CrearAutorizacionPage() {
     const [estudios, setEstudios] = useState<Estudio[]>([])
-    const [profesionales] = useState<ProfesionalOpcion[]>([])
+    const [profesionales, setProfesionales] = useState<ProfesionalOpcion[]>([])
     const [cargandoInicial, setCargandoInicial] = useState(true)
     const [cargando, setCargando] = useState(false)
     const [error, setError] = useState('')
@@ -29,17 +28,23 @@ export function CrearAutorizacionPage() {
 
     const usuario = obtenerUsuarioGuardado()
     const rol = usuario?.rol
-    const puedeCrear = rol === 'ADMIN' || rol === 'PROFESIONAL'
+    const esPaciente = rol === 'PACIENTE'
+    const puedeCrear = rol === 'ADMIN' || rol === 'PROFESIONAL' || esPaciente
 
     useEffect(() => {
         async function cargarDatos() {
             try {
-                const listaEstudios = await listarEstudios()
+                const [listaEstudios, listaProfesionales] = await Promise.all([
+                    esPaciente
+                        ? obtenerMiPerfil().then((perfil) =>
+                              listarEstudiosPaciente(perfil.id),
+                          )
+                        : listarEstudios(),
+                    listarProfesionales(),
+                ])
 
                 setEstudios(listaEstudios)
-
-                // TODO: Cargar profesionales cuando tengas el servicio correspondiente.
-                // setProfesionales(await listarProfesionales())
+                setProfesionales(listaProfesionales)
             } catch (err) {
                 setError(
                     obtenerMensajeError(
@@ -53,7 +58,7 @@ export function CrearAutorizacionPage() {
         }
 
         cargarDatos()
-    }, [])
+    }, [esPaciente])
 
     const manejarSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()

@@ -7,7 +7,7 @@ import type {
 
 export async function listarAutorizaciones(): Promise<AutorizacionEstudio[]> {
     const respuesta = await api.get<AutorizacionEstudio[]>(
-        '/autorizaciones-estudio',
+        '/autorizacionestudios',
     )
     return respuesta.data
 }
@@ -16,7 +16,7 @@ export async function obtenerAutorizacionPorId(
     id: number,
 ): Promise<AutorizacionEstudio> {
     const respuesta = await api.get<AutorizacionEstudio>(
-        `/autorizaciones-estudio/${id}`,
+        `/autorizacionestudios/${id}`,
     )
     return respuesta.data
 }
@@ -25,7 +25,7 @@ export async function verificarVigencia(
     id: number,
 ): Promise<VigenciaAutorizacion> {
     const respuesta = await api.get<VigenciaAutorizacion>(
-        `/autorizaciones-estudio/${id}/vigencia`,
+        `/autorizacionestudios/${id}/vigencia`,
     )
     return respuesta.data
 }
@@ -34,7 +34,7 @@ export async function crearAutorizacion(
     datos: CrearAutorizacionEstudio,
 ): Promise<AutorizacionEstudio> {
     const respuesta = await api.post<AutorizacionEstudio>(
-        '/autorizaciones-estudio',
+        '/autorizacionestudios',
         datos,
     )
     return respuesta.data
@@ -44,7 +44,7 @@ export async function revocarAutorizacion(
     id: number,
 ): Promise<AutorizacionEstudio> {
     const respuesta = await api.patch<AutorizacionEstudio>(
-        `/autorizaciones-estudio/${id}/revocar`,
+        `/autorizacionestudios/${id}/revocar`,
     )
     return respuesta.data
 }

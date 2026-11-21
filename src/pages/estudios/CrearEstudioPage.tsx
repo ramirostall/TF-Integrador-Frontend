@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { obtenerUsuarioGuardado } from '../../services/authService'
 import { crearEstudio } from '../../services/estudioService'
-import { listarPacientes } from '../../services/pacienteService'
+import {
+    listarPacientes,
+    obtenerMiPerfil,
+} from '../../services/pacienteService'
 import type { Paciente } from '../../types/paciente'
 import {
     ACEPTAR_ARCHIVO_ESTUDIO,
@@ -21,9 +25,19 @@ export function CrearEstudioPage() {
 
     const navigate = useNavigate()
 
+    const usuario = obtenerUsuarioGuardado()
+    const esPaciente = usuario?.rol === 'PACIENTE'
+
     useEffect(() => {
         async function cargarPacientes() {
             try {
+                if (esPaciente) {
+                    const perfil = await obtenerMiPerfil()
+                    setPacienteId(String(perfil.id))
+                    setPacientes([perfil])
+                    return
+                }
+
                 const datos = await listarPacientes()
                 setPacientes(datos)
             } catch (error) {
@@ -37,7 +51,7 @@ export function CrearEstudioPage() {
         }
 
         cargarPacientes()
-    }, [])
+    }, [esPaciente])
 
     function handleArchivoChange(event: React.ChangeEvent<HTMLInputElement>) {
         const seleccionado = event.target.files?.[0] ?? null
@@ -94,22 +108,31 @@ export function CrearEstudioPage() {
             <h1>Crear estudio</h1>
 
             <form onSubmit={handleSubmit}>
-                <label>
-                    Paciente
-                    <select
-                        value={pacienteId}
-                        onChange={(event) => setPacienteId(event.target.value)}
-                        required
-                    >
-                        <option value="">Seleccioná un paciente</option>
-                        {pacientes.map((paciente) => (
-                            <option key={paciente.id} value={paciente.id}>
-                                {paciente.apellido}, {paciente.nombre} (DNI{' '}
-                                {paciente.dni})
-                            </option>
-                        ))}
-                    </select>
-                </label>
+                {esPaciente ? (
+                    <p>
+                        Paciente: {pacientes[0]?.apellido},{' '}
+                        {pacientes[0]?.nombre} (DNI {pacientes[0]?.dni})
+                    </p>
+                ) : (
+                    <label>
+                        Paciente
+                        <select
+                            value={pacienteId}
+                            onChange={(event) =>
+                                setPacienteId(event.target.value)
+                            }
+                            required
+                        >
+                            <option value="">Seleccioná un paciente</option>
+                            {pacientes.map((paciente) => (
+                                <option key={paciente.id} value={paciente.id}>
+                                    {paciente.apellido}, {paciente.nombre} (DNI{' '}
+                                    {paciente.dni})
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                )}
 
                 <label>
                     Tipo

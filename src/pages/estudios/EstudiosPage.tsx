@@ -137,12 +137,7 @@ export function EstudiosPage() {
         <main>
             <h1>Estudios</h1>
 
-            {esAdmin && (
-                <p>
-                    <Link to="/estudios/nuevo">Crear estudio</Link>
-                </p>
-            )}
-            {esAdmin && (
+            {(esAdmin || esPaciente) && (
                 <p>
                     <Link to="/estudios/nuevo">Crear estudio</Link>
                 </p>
@@ -206,7 +201,7 @@ export function EstudiosPage() {
                                 <th>Descripción</th>
                                 <th>Archivo</th>
                                 {esPaciente && <th>Autorizaciones</th>}
-                                {(esAdmin || esProfesional) && (
+                                {(esAdmin || esProfesional || esPaciente) && (
                                     <th>Acciones</th>
                                 )}
                             </tr>
@@ -237,7 +232,9 @@ export function EstudiosPage() {
                                         </td>
                                     )}
 
-                                    {(esAdmin || esProfesional) && (
+                                    {(esAdmin ||
+                                        esProfesional ||
+                                        esPaciente) && (
                                         <td>
                                             <div className="acciones">
                                                 <Link

@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw'
-import { pacientesFixture, usuariosFixture } from './fixtures'
+import { agendasFixture, pacientesFixture, usuariosFixture } from './fixtures'
 
 export const handlers = [
     http.get('*/usuarios/email/:email', ({ params }) => {
@@ -84,4 +84,53 @@ export const handlers = [
         '*/pacientes/:id',
         () => new HttpResponse(null, { status: 204 }),
     ),
+
+    http.get('*/agendas', () => HttpResponse.json(agendasFixture)),
+    http.get('*/agendas/profesional/:profesionalId', ({ params }) => {
+        const profesionalId = Number(params.profesionalId)
+        return HttpResponse.json(
+            agendasFixture.filter((a) => a.profesionalId === profesionalId),
+        )
+    }),
+    http.get('*/agendas/:id', ({ params }) => {
+        const id = Number(params.id)
+        const agenda = agendasFixture.find((a) => a.id === id)
+        return agenda
+            ? HttpResponse.json(agenda)
+            : HttpResponse.json(
+                  { mensaje: 'Agenda no encontrada' },
+                  { status: 404 },
+              )
+    }),
+    http.post('*/agendas', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json(
+            {
+                id: 3,
+                activo: true,
+                createdAt: '2026-01-03T00:00:00Z',
+                updatedAt: '2026-01-03T00:00:00Z',
+                profesional: agendasFixture[0].profesional,
+                ...body,
+            },
+            { status: 201 },
+        )
+    }),
+    http.put('*/agendas/:id', async ({ params, request }) => {
+        const id = Number(params.id)
+        const body = (await request.json()) as Record<string, unknown>
+        const base =
+            agendasFixture.find((a) => a.id === id) ?? agendasFixture[0]
+        return HttpResponse.json({ ...base, ...body, id })
+    }),
+    http.patch(
+        '*/agendas/:id/desactivar',
+        () => new HttpResponse(null, { status: 204 }),
+    ),
+    http.patch('*/agendas/:id/activar', ({ params }) => {
+        const id = Number(params.id)
+        const base =
+            agendasFixture.find((a) => a.id === id) ?? agendasFixture[0]
+        return HttpResponse.json({ ...base, activo: true })
+    }),
 ]

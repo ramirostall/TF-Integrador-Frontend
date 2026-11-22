@@ -53,3 +53,8 @@ export async function desactivarAgenda(
             : { cancelarTurnosFuturos },
     )
 }
+
+export async function activarAgenda(id: number): Promise<Agenda> {
+    const respuesta = await api.patch<Agenda>(`/agendas/${id}/activar`)
+    return respuesta.data
+}

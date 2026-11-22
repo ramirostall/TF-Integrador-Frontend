@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
+    activarAgenda,
     desactivarAgenda,
     modificarAgenda,
     obtenerAgendaPorId,
@@ -37,6 +38,7 @@ export function DetalleAgendaPage() {
     const [cargando, setCargando] = useState(!Number.isNaN(agendaId))
     const [guardando, setGuardando] = useState(false)
     const [procesando, setProcesando] = useState(false)
+    const [activando, setActivando] = useState(false)
 
     const esAdmin = obtenerUsuarioGuardado()?.rol === 'ADMIN'
 
@@ -124,6 +126,28 @@ export function DetalleAgendaPage() {
             )
         } finally {
             setProcesando(false)
+        }
+    }
+
+    async function handleActivar() {
+        if (!agenda) return
+
+        setError('')
+        setMensaje('')
+        setActivando(true)
+
+        try {
+            const activada = await activarAgenda(agenda.id)
+            setAgenda(activada)
+            setDiaSemana(activada.diaSemana)
+            setHoraInicio(activada.horaInicio.slice(0, 5))
+            setHoraFin(activada.horaFin.slice(0, 5))
+            setDuracionTurno(String(activada.duracionTurno))
+            setMensaje('Agenda activada correctamente.')
+        } catch (err) {
+            setError(obtenerMensajeError(err, 'No se pudo activar la agenda.'))
+        } finally {
+            setActivando(false)
         }
     }
 
@@ -256,15 +280,27 @@ export function DetalleAgendaPage() {
                 </form>
             )}
 
-            {esAdmin && agenda.activo && (
+            {esAdmin && (
                 <p>
-                    <button
-                        type="button"
-                        onClick={handleDesactivar}
-                        disabled={procesando}
-                    >
-                        {procesando ? 'Desactivando...' : 'Desactivar agenda'}
-                    </button>
+                    {agenda.activo ? (
+                        <button
+                            type="button"
+                            onClick={handleDesactivar}
+                            disabled={procesando}
+                        >
+                            {procesando
+                                ? 'Desactivando...'
+                                : 'Desactivar agenda'}
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={handleActivar}
+                            disabled={activando}
+                        >
+                            {activando ? 'Activando...' : 'Activar agenda'}
+                        </button>
+                    )}
                 </p>
             )}
 

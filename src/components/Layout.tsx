@@ -23,6 +23,7 @@ export function Layout() {
                     <Link to="/mi-cuenta">Mi cuenta</Link>
 
                     <Link to="/estudios">Estudios</Link>
+                    <Link to="/agendas">Agendas</Link>
 
                     {/* Enlace al módulo de autorizaciones */}
                     {(usuario?.rol === 'ADMIN' ||

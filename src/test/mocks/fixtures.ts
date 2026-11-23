@@ -1,3 +1,4 @@
+import type { Agenda } from '../../types/agenda'
 import type { Paciente } from '../../types/paciente'
 import type { Usuario } from '../../types/usuario'
 
@@ -43,5 +44,40 @@ export const pacientesFixture: Paciente[] = [
             rol: 'PACIENTE',
             activo: true,
         },
+    },
+]
+
+const profesionalAgendaFixture = {
+    id: 1,
+    nombre: 'Ana',
+    apellido: 'Lopez',
+    matricula: 'MP-1234',
+    especialidad: 'Kinesiologia',
+}
+
+export const agendasFixture: Agenda[] = [
+    {
+        id: 1,
+        profesionalId: 1,
+        diaSemana: 'LUNES',
+        horaInicio: '09:00:00',
+        horaFin: '13:00:00',
+        duracionTurno: 30,
+        activo: true,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+        profesional: profesionalAgendaFixture,
+    },
+    {
+        id: 2,
+        profesionalId: 1,
+        diaSemana: 'MIERCOLES',
+        horaInicio: '14:00:00',
+        horaFin: '18:00:00',
+        duracionTurno: 45,
+        activo: false,
+        createdAt: '2026-01-02T00:00:00Z',
+        updatedAt: '2026-01-02T00:00:00Z',
+        profesional: profesionalAgendaFixture,
     },
 ]

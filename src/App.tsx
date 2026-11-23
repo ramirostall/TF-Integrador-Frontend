@@ -20,6 +20,9 @@ import { DetalleEstudioPage } from './pages/estudios/DetalleEstudioPage'
 import { AutorizacionesPage } from './pages/autorizacionEstudios/AutorizacionesPage'
 import { CrearAutorizacionPage } from './pages/autorizacionEstudios/CrearAutorizacionPage'
 import { DetalleAutorizacionPage } from './pages/autorizacionEstudios/DetalleAutorizacionPage'
+import { AgendasPage } from './pages/agendas/AgendasPage'
+import { CrearAgendaPage } from './pages/agendas/CrearAgendaPage'
+import { DetalleAgendaPage } from './pages/agendas/DetalleAgendaPage'
 
 function App() {
     return (
@@ -160,6 +163,36 @@ function App() {
                                 roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
                             >
                                 <DetalleAutorizacionPage />
+                            </RutaPorRol>
+                        }
+                    />
+                    <Route
+                        path="agendas"
+                        element={
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
+                                <AgendasPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="agendas/nuevo"
+                        element={
+                            <RutaPorRol roles={['ADMIN']}>
+                                <CrearAgendaPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="agendas/:id"
+                        element={
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
+                                <DetalleAgendaPage />
                             </RutaPorRol>
                         }
                     />

@@ -23,6 +23,9 @@ import { DetalleAutorizacionPage } from './pages/autorizacionEstudios/DetalleAut
 import { AgendasPage } from './pages/agendas/AgendasPage'
 import { CrearAgendaPage } from './pages/agendas/CrearAgendaPage'
 import { DetalleAgendaPage } from './pages/agendas/DetalleAgendaPage'
+import { EspaciosPage } from './pages/espacios/EspaciosPage'
+import { CrearEspacioPage } from './pages/espacios/CrearEspacioPage'
+import { DetalleEspacioPage } from './pages/espacios/DetalleEspacioPage'
 
 function App() {
     return (
@@ -193,6 +196,36 @@ function App() {
                                 roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
                             >
                                 <DetalleAgendaPage />
+                            </RutaPorRol>
+                        }
+                    />
+                    <Route
+                        path="espacios"
+                        element={
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
+                                <EspaciosPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="espacios/nuevo"
+                        element={
+                            <RutaPorRol roles={['ADMIN']}>
+                                <CrearEspacioPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="espacios/:id"
+                        element={
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
+                                <DetalleEspacioPage />
                             </RutaPorRol>
                         }
                     />

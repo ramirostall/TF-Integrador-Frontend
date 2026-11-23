@@ -34,7 +34,7 @@ describe('AgendasPage', () => {
         expect(screen.getByText('Cargando agendas...')).toBeInTheDocument()
         expect(await screen.findByText('LUNES')).toBeInTheDocument()
         expect(screen.getByText('MIERCOLES')).toBeInTheDocument()
-        expect(screen.getAllByText('Ana Lopez')).toHaveLength(2)
+        expect(screen.getAllByText(/Lopez, Ana/)).toHaveLength(1)
     })
 
     it('filtra agendas por día y por matrícula', async () => {
@@ -53,10 +53,16 @@ describe('AgendasPage', () => {
         expect(screen.getByText('MIERCOLES')).toBeInTheDocument()
     })
 
-    it('pagina cuando hay más de 10 agendas', async () => {
+    it('pagina cuando hay más de 10 profesionales', async () => {
         const muchas = Array.from({ length: 12 }, (_, i) => ({
             ...agendasFixture[0],
             id: i + 1,
+            profesionalId: i + 1,
+            profesional: {
+                ...agendasFixture[0].profesional,
+                id: i + 1,
+                apellido: `Profesional ${i + 1}`,
+            },
         }))
         server.use(http.get('*/agendas', () => HttpResponse.json(muchas)))
 

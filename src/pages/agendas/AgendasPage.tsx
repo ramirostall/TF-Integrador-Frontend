@@ -2,10 +2,24 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { desactivarAgenda, listarAgendas } from '../../services/agendaService'
 import { obtenerUsuarioGuardado } from '../../services/authService'
-import type { Agenda } from '../../types/agenda'
+import type { Agenda, DiaSemana, ProfesionalAgenda } from '../../types/agenda'
 import { obtenerMensajeError } from '../../utils/errores'
 
 const ELEMENTOS_POR_PAGINA = 10
+const ORDEN_DIAS: DiaSemana[] = [
+    'LUNES',
+    'MARTES',
+    'MIERCOLES',
+    'JUEVES',
+    'VIERNES',
+    'SABADO',
+    'DOMINGO',
+]
+
+interface GrupoProfesional {
+    profesional: ProfesionalAgenda
+    agendas: Agenda[]
+}
 
 export function AgendasPage() {
     const [agendas, setAgendas] = useState<Agenda[]>([])
@@ -54,16 +68,52 @@ export function AgendasPage() {
         })
     }, [agendas, termino])
 
+    const grupos = useMemo(() => {
+        const mapa = new Map<number, GrupoProfesional>()
+
+        for (const agenda of agendasFiltradas) {
+            const grupo = mapa.get(agenda.profesionalId)
+
+            if (grupo) {
+                grupo.agendas.push(agenda)
+            } else {
+                mapa.set(agenda.profesionalId, {
+                    profesional: agenda.profesional,
+                    agendas: [agenda],
+                })
+            }
+        }
+
+        return Array.from(mapa.values())
+            .map((grupo) => ({
+                ...grupo,
+                agendas: [...grupo.agendas].sort((a, b) => {
+                    const porDia =
+                        ORDEN_DIAS.indexOf(a.diaSemana) -
+                        ORDEN_DIAS.indexOf(b.diaSemana)
+
+                    return porDia !== 0
+                        ? porDia
+                        : a.horaInicio.localeCompare(b.horaInicio)
+                }),
+            }))
+            .sort((a, b) =>
+                `${a.profesional.apellido} ${a.profesional.nombre}`.localeCompare(
+                    `${b.profesional.apellido} ${b.profesional.nombre}`,
+                ),
+            )
+    }, [agendasFiltradas])
+
     const totalPaginas = Math.max(
         1,
-        Math.ceil(agendasFiltradas.length / ELEMENTOS_POR_PAGINA),
+        Math.ceil(grupos.length / ELEMENTOS_POR_PAGINA),
     )
     const paginaSegura = Math.min(paginaActual, totalPaginas)
 
-    const agendasPaginadas = useMemo(() => {
+    const gruposPaginados = useMemo(() => {
         const inicio = (paginaSegura - 1) * ELEMENTOS_POR_PAGINA
-        return agendasFiltradas.slice(inicio, inicio + ELEMENTOS_POR_PAGINA)
-    }, [agendasFiltradas, paginaSegura])
+        return grupos.slice(inicio, inicio + ELEMENTOS_POR_PAGINA)
+    }, [grupos, paginaSegura])
 
     async function manejarDesactivar(id: number) {
         if (
@@ -131,78 +181,83 @@ export function AgendasPage() {
                 <p>No se encontraron agendas con ese criterio.</p>
             ) : (
                 <>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Profesional</th>
-                                <th>Día</th>
-                                <th>Horario</th>
-                                <th>Duración</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {agendasPaginadas.map((agenda) => (
-                                <tr key={agenda.id}>
-                                    <td>{agenda.id}</td>
-                                    <td>
-                                        {agenda.profesional.nombre}{' '}
-                                        {agenda.profesional.apellido}
-                                        <br />
-                                        <small>
-                                            {agenda.profesional.especialidad}
-                                        </small>
-                                    </td>
-                                    <td>{agenda.diaSemana}</td>
-                                    <td>
-                                        {agenda.horaInicio.slice(0, 5)} -{' '}
-                                        {agenda.horaFin.slice(0, 5)}
-                                    </td>
-                                    <td>{agenda.duracionTurno} min</td>
-                                    <td>
-                                        <span
-                                            className={
-                                                agenda.activo
-                                                    ? 'estado-disponible'
-                                                    : 'estado-vencido'
-                                            }
-                                        >
-                                            {agenda.activo
-                                                ? 'Activa'
-                                                : 'Inactiva'}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="acciones">
-                                            <Link to={`/agendas/${agenda.id}`}>
-                                                Ver
-                                            </Link>
-                                            {esAdmin && agenda.activo && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        manejarDesactivar(
-                                                            agenda.id,
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        desactivando ===
-                                                        agenda.id
+                    {gruposPaginados.map((grupo) => (
+                        <section key={grupo.profesional.id}>
+                            <h2>
+                                {grupo.profesional.apellido},{' '}
+                                {grupo.profesional.nombre} -{' '}
+                                {grupo.profesional.especialidad}
+                            </h2>
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Día</th>
+                                        <th>Horario</th>
+                                        <th>Duración</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {grupo.agendas.map((agenda) => (
+                                        <tr key={agenda.id}>
+                                            <td>{agenda.id}</td>
+                                            <td>{agenda.diaSemana}</td>
+                                            <td>
+                                                {agenda.horaInicio.slice(0, 5)}{' '}
+                                                - {agenda.horaFin.slice(0, 5)}
+                                            </td>
+                                            <td>{agenda.duracionTurno} min</td>
+                                            <td>
+                                                <span
+                                                    className={
+                                                        agenda.activo
+                                                            ? 'estado-disponible'
+                                                            : 'estado-vencido'
                                                     }
                                                 >
-                                                    {desactivando === agenda.id
-                                                        ? 'Desactivando...'
-                                                        : 'Desactivar'}
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                                    {agenda.activo
+                                                        ? 'Activa'
+                                                        : 'Inactiva'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="acciones">
+                                                    <Link
+                                                        to={`/agendas/${agenda.id}`}
+                                                    >
+                                                        Ver
+                                                    </Link>
+                                                    {esAdmin &&
+                                                        agenda.activo && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    manejarDesactivar(
+                                                                        agenda.id,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    desactivando ===
+                                                                    agenda.id
+                                                                }
+                                                            >
+                                                                {desactivando ===
+                                                                agenda.id
+                                                                    ? 'Desactivando...'
+                                                                    : 'Desactivar'}
+                                                            </button>
+                                                        )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </section>
+                    ))}
 
                     <p>
                         Página {paginaSegura} de {totalPaginas}

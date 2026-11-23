@@ -203,6 +203,20 @@ th {
     gap: 10px;
 }
 
+/* Crear agenda: duración del turno y opción de repetirla en los demás días */
+.campo-duracion {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.check-misma-duracion {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: normal;
+}
+
 .mensaje-error {
     color: #b91c1c;
 }

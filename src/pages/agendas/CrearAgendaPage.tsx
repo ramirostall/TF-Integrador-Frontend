@@ -31,6 +31,13 @@ function aMinutos(hora: string): number {
     return Number(hora.slice(0, 2)) * 60 + Number(hora.slice(3, 5))
 }
 
+function conDuracionComun(dias: DiaAgendaForm[]): DiaAgendaForm[] {
+    const duracion = dias[0].duracionTurno
+    return dias.map((dia, indice) =>
+        indice === 0 ? dia : { ...dia, duracionTurno: duracion },
+    )
+}
+
 export function CrearAgendaPage() {
     const navigate = useNavigate()
 
@@ -40,6 +47,7 @@ export function CrearAgendaPage() {
     const [error, setError] = useState('')
     const [cargandoInicial, setCargandoInicial] = useState(true)
     const [guardando, setGuardando] = useState(false)
+    const [mismaDuracion, setMismaDuracion] = useState(false)
 
     useEffect(() => {
         async function cargar() {
@@ -61,13 +69,22 @@ export function CrearAgendaPage() {
     }, [])
 
     function actualizarDia(indice: number, datos: Partial<DiaAgendaForm>) {
-        setDias((prev) =>
-            prev.map((dia, i) => (i === indice ? { ...dia, ...datos } : dia)),
-        )
+        setDias((prev) => {
+            const actualizados = prev.map((dia, i) =>
+                i === indice ? { ...dia, ...datos } : dia,
+            )
+
+            return mismaDuracion && indice === 0
+                ? conDuracionComun(actualizados)
+                : actualizados
+        })
     }
 
     function agregarDia() {
-        setDias((prev) => [...prev, diaVacio()])
+        setDias((prev) => {
+            const siguiente = [...prev, diaVacio()]
+            return mismaDuracion ? conDuracionComun(siguiente) : siguiente
+        })
     }
 
     function quitarDia(indice: number) {
@@ -262,18 +279,49 @@ export function CrearAgendaPage() {
                             <label htmlFor={`duracionTurno-${indice}`}>
                                 Duración del turno (minutos)
                             </label>
-                            <input
-                                id={`duracionTurno-${indice}`}
-                                type="number"
-                                min="1"
-                                required
-                                value={dia.duracionTurno}
-                                onChange={(event) =>
-                                    actualizarDia(indice, {
-                                        duracionTurno: event.target.value,
-                                    })
-                                }
-                            />
+                            <div className="campo-duracion">
+                                <input
+                                    id={`duracionTurno-${indice}`}
+                                    type="number"
+                                    min="1"
+                                    required
+                                    readOnly={mismaDuracion && indice > 0}
+                                    value={dia.duracionTurno}
+                                    onChange={(event) =>
+                                        actualizarDia(indice, {
+                                            duracionTurno: event.target.value,
+                                        })
+                                    }
+                                />
+
+                                {indice === 0 &&
+                                    Boolean(
+                                        dias[0].diaSemana &&
+                                        dias[0].duracionTurno,
+                                    ) && (
+                                        <label className="check-misma-duracion">
+                                            <input
+                                                type="checkbox"
+                                                checked={mismaDuracion}
+                                                onChange={(event) => {
+                                                    const activado =
+                                                        event.target.checked
+                                                    setMismaDuracion(activado)
+
+                                                    if (activado) {
+                                                        setDias((prev) =>
+                                                            conDuracionComun(
+                                                                prev,
+                                                            ),
+                                                        )
+                                                    }
+                                                }}
+                                            />
+                                            Mantener misma duración para los
+                                            demás días
+                                        </label>
+                                    )}
+                            </div>
                         </div>
 
                         <button

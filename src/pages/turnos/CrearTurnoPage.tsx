@@ -20,21 +20,21 @@ export function CrearTurnoPage() {
 
     const navigate = useNavigate()
 
-    function handleChange(
-        campo: keyof CrearTurno,
-        valor: string,
-    ) {
-        setDatos((actual) => {
-            if (campo === 'profesionalId' || campo === 'pacienteId' || campo === 'agendaId' || campo === 'duracion') {
+    function handleChange(campo: keyof CrearTurno, valor: string) {
+        setDatos((actual: CrearTurno) => {
+            if (
+                campo === 'profesionalId' ||
+                campo === 'pacienteId' ||
+                campo === 'agendaId' ||
+                campo === 'duracion'
+            ) {
                 return { ...actual, [campo]: Number(valor) }
             }
             return { ...actual, [campo]: valor }
         })
     }
 
-    async function handleSubmit(
-        event: React.FormEvent<HTMLFormElement>,
-    ) {
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
         setError('')
         setMensaje('')
@@ -45,12 +45,7 @@ export function CrearTurnoPage() {
             setMensaje('Turno creado correctamente.')
             setTimeout(() => navigate('/turnos'), 1500)
         } catch (error) {
-            setError(
-                obtenerMensajeError(
-                    error,
-                    'No se pudo crear el turno.',
-                ),
-            )
+            setError(obtenerMensajeError(error, 'No se pudo crear el turno.'))
         } finally {
             setCargando(false)
         }
@@ -119,7 +114,9 @@ export function CrearTurnoPage() {
                             id="fecha"
                             type="date"
                             value={datos.fecha}
-                            onChange={(e) => handleChange('fecha', e.target.value)}
+                            onChange={(e) =>
+                                handleChange('fecha', e.target.value)
+                            }
                             required
                         />
                     </div>
@@ -130,7 +127,9 @@ export function CrearTurnoPage() {
                             id="hora"
                             type="time"
                             value={datos.hora}
-                            onChange={(e) => handleChange('hora', e.target.value)}
+                            onChange={(e) =>
+                                handleChange('hora', e.target.value)
+                            }
                             required
                         />
                     </div>

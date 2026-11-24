@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-    cancelarTurno,
-    listarTurnos,
-} from '../../services/turnoService'
+import { cancelarTurno, listarTurnos } from '../../services/turnoService'
 import type { Turno, EstadoTurno, FiltrosTurnos } from '../../types/turno'
 import { obtenerMensajeError } from '../../utils/errores'
 
@@ -97,16 +94,17 @@ export function TurnosPage() {
         }
     }
 
-    function handleCambiarFiltro(
-        campo: keyof FiltrosTurnos,
-        valor: string,
-    ) {
+    function handleCambiarFiltro(campo: keyof FiltrosTurnos, valor: string) {
         setPaginaActual(1)
         if (valor === '') {
-            const { [campo]: _restante, ...resto } = filtros
+            const resto = { ...filtros }
+            delete resto[campo]
             setFiltros(resto)
         } else {
-            setFiltros((actual) => ({ ...actual, [campo]: valor }))
+            setFiltros((actual: FiltrosTurnos) => ({
+                ...actual,
+                [campo]: valor,
+            }))
         }
     }
 
@@ -135,7 +133,14 @@ export function TurnosPage() {
             )}
 
             {!cargando && turnos.length > 0 && (
-                <div style={{ marginBottom: '12px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <div
+                    style={{
+                        marginBottom: '12px',
+                        display: 'flex',
+                        gap: '12px',
+                        flexWrap: 'wrap',
+                    }}
+                >
                     <div>
                         <label htmlFor="filtro-estado">Estado</label>
                         <select
@@ -181,9 +186,7 @@ export function TurnosPage() {
             ) : turnos.length === 0 ? (
                 <p>No hay turnos registrados.</p>
             ) : turnosFiltrados.length === 0 ? (
-                <p>
-                    No se encontraron turnos con ese criterio de búsqueda.
-                </p>
+                <p>No se encontraron turnos con ese criterio de búsqueda.</p>
             ) : (
                 <>
                     <table>
@@ -212,15 +215,15 @@ export function TurnosPage() {
                                     <td>{turno.hora}</td>
                                     <td>{turno.duracion} min</td>
                                     <td>
-                                        <span className={`estado-${turno.estado.toLowerCase()}`}>
+                                        <span
+                                            className={`estado-${turno.estado.toLowerCase()}`}
+                                        >
                                             {turno.estado}
                                         </span>
                                     </td>
                                     <td>
                                         <div className="acciones">
-                                            <Link
-                                                to={`/turnos/${turno.id}`}
-                                            >
+                                            <Link to={`/turnos/${turno.id}`}>
                                                 Ver
                                             </Link>
 
@@ -228,10 +231,13 @@ export function TurnosPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() =>
-                                                        handleCancelarTurno(turno)
+                                                        handleCancelarTurno(
+                                                            turno,
+                                                        )
                                                     }
                                                     disabled={
-                                                        procesandoId === turno.id
+                                                        procesandoId ===
+                                                        turno.id
                                                     }
                                                 >
                                                     Cancelar

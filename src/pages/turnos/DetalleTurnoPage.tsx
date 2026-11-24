@@ -24,10 +24,7 @@ export function DetalleTurnoPage() {
                 setTurno(datos)
             } catch (error) {
                 setError(
-                    obtenerMensajeError(
-                        error,
-                        'No se pudo cargar el turno.',
-                    ),
+                    obtenerMensajeError(error, 'No se pudo cargar el turno.'),
                 )
             } finally {
                 setCargando(false)
@@ -58,16 +55,33 @@ export function DetalleTurnoPage() {
             ) : (
                 <>
                     <div>
-                        <p><strong>ID:</strong> {turno.id}</p>
-                        <p><strong>Profesional ID:</strong> {turno.profesionalId}</p>
-                        <p><strong>Paciente ID:</strong> {turno.pacienteId}</p>
-                        <p><strong>Agenda ID:</strong> {turno.agendaId}</p>
-                        <p><strong>Fecha:</strong> {turno.fecha}</p>
-                        <p><strong>Hora:</strong> {turno.hora}</p>
-                        <p><strong>Duración:</strong> {turno.duracion} min</p>
+                        <p>
+                            <strong>ID:</strong> {turno.id}
+                        </p>
+                        <p>
+                            <strong>Profesional ID:</strong>{' '}
+                            {turno.profesionalId}
+                        </p>
+                        <p>
+                            <strong>Paciente ID:</strong> {turno.pacienteId}
+                        </p>
+                        <p>
+                            <strong>Agenda ID:</strong> {turno.agendaId}
+                        </p>
+                        <p>
+                            <strong>Fecha:</strong> {turno.fecha}
+                        </p>
+                        <p>
+                            <strong>Hora:</strong> {turno.hora}
+                        </p>
+                        <p>
+                            <strong>Duración:</strong> {turno.duracion} min
+                        </p>
                         <p>
                             <strong>Estado:</strong>
-                            <span className={`estado-${turno.estado.toLowerCase()}`}>
+                            <span
+                                className={`estado-${turno.estado.toLowerCase()}`}
+                            >
                                 {turno.estado}
                             </span>
                         </p>

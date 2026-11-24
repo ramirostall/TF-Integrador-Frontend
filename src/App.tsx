@@ -26,6 +26,9 @@ import { DetalleAgendaPage } from './pages/agendas/DetalleAgendaPage'
 import { TurnosPage } from './pages/turnos/TurnosPage'
 import { CrearTurnoPage } from './pages/turnos/CrearTurnoPage'
 import { DetalleTurnoPage } from './pages/turnos/DetalleTurnoPage'
+import { ProfesionalesPage } from './pages/profesionales/ProfesionalesPage'
+import { CrearProfesionalPage } from './pages/profesionales/CrearProfesionalPage'
+import { DetalleProfesionalPage } from './pages/profesionales/DetalleProfesionalPage'
 
 function App() {
     return (
@@ -227,6 +230,33 @@ function App() {
                                 roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
                             >
                                 <DetalleTurnoPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="profesionales"
+                        element={
+                            <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
+                                <ProfesionalesPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="profesionales/nuevo"
+                        element={
+                            <RutaPorRol roles={['ADMIN']}>
+                                <CrearProfesionalPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="profesionales/:id"
+                        element={
+                            <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
+                                <DetalleProfesionalPage />
                             </RutaPorRol>
                         }
                     />

@@ -35,10 +35,7 @@ export async function modificarProfesional(
     id: number,
     datos: ActualizarProfesional,
 ): Promise<Profesional> {
-    const respuesta = await api.put<Profesional>(
-        `/profesionales/${id}`,
-        datos,
-    )
+    const respuesta = await api.put<Profesional>(`/profesionales/${id}`, datos)
     return respuesta.data
 }
 

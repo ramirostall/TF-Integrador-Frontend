@@ -6,9 +6,7 @@ import type {
     FiltrosTurnos,
 } from '../types/turno'
 
-export async function listarTurnos(
-    filtros?: FiltrosTurnos,
-): Promise<Turno[]> {
+export async function listarTurnos(filtros?: FiltrosTurnos): Promise<Turno[]> {
     const respuesta = await api.get<Turno[]>('/turnos', {
         params: filtros,
     })

@@ -58,26 +58,34 @@ export function DetalleProfesionalPage() {
             ) : (
                 <>
                     <div>
-                        <p><strong>ID:</strong> {profesional.id}</p>
+                        <p>
+                            <strong>ID:</strong> {profesional.id}
+                        </p>
                         <p>
                             <strong>Nombre:</strong> {profesional.nombre}
                         </p>
                         <p>
                             <strong>Apellido:</strong> {profesional.apellido}
                         </p>
-                        <p><strong>DNI:</strong> {profesional.dni}</p>
-                        <p><strong>Email:</strong> {profesional.email}</p>
+                        <p>
+                            <strong>DNI:</strong> {profesional.dni}
+                        </p>
+                        <p>
+                            <strong>Email:</strong> {profesional.email}
+                        </p>
                         <p>
                             <strong>Teléfono:</strong> {profesional.telefono}
                         </p>
                         <p>
-                            <strong>Especialidad:</strong> {profesional.especialidad}
+                            <strong>Especialidad:</strong>{' '}
+                            {profesional.especialidad}
                         </p>
                         <p>
                             <strong>Matrícula:</strong> {profesional.matricula}
                         </p>
                         <p>
-                            <strong>Estado:</strong> {profesional.activo ? 'Activo' : 'Inactivo'}
+                            <strong>Estado:</strong>{' '}
+                            {profesional.activo ? 'Activo' : 'Inactivo'}
                         </p>
                         {profesional.createdAt && (
                             <p>
@@ -86,7 +94,8 @@ export function DetalleProfesionalPage() {
                         )}
                         {profesional.updatedAt && (
                             <p>
-                                <strong>Actualizado:</strong> {profesional.updatedAt}
+                                <strong>Actualizado:</strong>{' '}
+                                {profesional.updatedAt}
                             </p>
                         )}
                     </div>

@@ -203,9 +203,7 @@ function App() {
                     <Route
                         path="profesionales"
                         element={
-                            <RutaPorRol
-                                roles={['ADMIN', 'PROFESIONAL']}
-                            >
+                            <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
                                 <ProfesionalesPage />
                             </RutaPorRol>
                         }
@@ -223,9 +221,7 @@ function App() {
                     <Route
                         path="profesionales/:id"
                         element={
-                            <RutaPorRol
-                                roles={['ADMIN', 'PROFESIONAL']}
-                            >
+                            <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
                                 <DetalleProfesionalPage />
                             </RutaPorRol>
                         }

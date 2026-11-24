@@ -52,8 +52,7 @@ export function ProfesionalesPage() {
             const dni = profesional.dni?.toLowerCase() ?? ''
             const email = profesional.email?.toLowerCase() ?? ''
             const telefono = profesional.telefono?.toLowerCase() ?? ''
-            const especialidad =
-                profesional.especialidad?.toLowerCase() ?? ''
+            const especialidad = profesional.especialidad?.toLowerCase() ?? ''
 
             return (
                 nombre.includes(termino) ||
@@ -152,7 +151,8 @@ export function ProfesionalesPage() {
                 <p>No hay profesionales registrados.</p>
             ) : profesionalesFiltrados.length === 0 ? (
                 <p>
-                    No se encontraron profesionales con ese criterio de búsqueda.
+                    No se encontraron profesionales con ese criterio de
+                    búsqueda.
                 </p>
             ) : (
                 <>
@@ -180,7 +180,9 @@ export function ProfesionalesPage() {
                                     <td>{profesional.telefono}</td>
                                     <td>{profesional.especialidad}</td>
                                     <td>
-                                        {profesional.activo ? 'Activo' : 'Inactivo'}
+                                        {profesional.activo
+                                            ? 'Activo'
+                                            : 'Inactivo'}
                                     </td>
                                     <td>
                                         <div className="acciones">
@@ -193,9 +195,14 @@ export function ProfesionalesPage() {
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    handleCambiarEstado(profesional)
+                                                    handleCambiarEstado(
+                                                        profesional,
+                                                    )
                                                 }
-                                                disabled={procesandoId === profesional.id}
+                                                disabled={
+                                                    procesandoId ===
+                                                    profesional.id
+                                                }
                                             >
                                                 {profesional.activo
                                                     ? 'Desactivar'

@@ -22,16 +22,11 @@ export function CrearProfesionalPage() {
 
     const navigate = useNavigate()
 
-    function handleChange(
-        campo: keyof CrearProfesional,
-        valor: string,
-    ) {
+    function handleChange(campo: keyof CrearProfesional, valor: string) {
         setDatos((actual) => ({ ...actual, [campo]: valor }))
     }
 
-    async function handleSubmit(
-        event: React.FormEvent<HTMLFormElement>,
-    ) {
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
         setError('')
         setMensaje('')
@@ -43,10 +38,7 @@ export function CrearProfesionalPage() {
             setTimeout(() => navigate('/profesionales'), 1500)
         } catch (error) {
             setError(
-                obtenerMensajeError(
-                    error,
-                    'No se pudo crear el profesional.',
-                ),
+                obtenerMensajeError(error, 'No se pudo crear el profesional.'),
             )
         } finally {
             setCargando(false)
@@ -103,7 +95,9 @@ export function CrearProfesionalPage() {
                             id="dni"
                             type="text"
                             value={datos.dni}
-                            onChange={(e) => handleChange('dni', e.target.value)}
+                            onChange={(e) =>
+                                handleChange('dni', e.target.value)
+                            }
                             required
                         />
                     </div>

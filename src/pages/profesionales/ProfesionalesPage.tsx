@@ -86,21 +86,25 @@ export function ProfesionalesPage() {
         setProcesandoId(profesional.id)
 
         try {
-            const actualizado = profesional.activo
-                ? await desactivarProfesional(profesional.id)
-                : await activarProfesional(profesional.id)
-
-            setProfesionales((actuales) =>
-                actuales.map((item) =>
-                    item.id === actualizado.id ? actualizado : item,
-                ),
-            )
-
-            setMensaje(
-                actualizado.activo
-                    ? 'Profesional reactivado correctamente.'
-                    : 'Profesional desactivado correctamente.',
-            )
+            if (profesional.activo) {
+                await desactivarProfesional(profesional.id)
+                setProfesionales((actuales) =>
+                    actuales.map((item) =>
+                        item.id === profesional.id
+                            ? { ...item, activo: false }
+                            : item,
+                    ),
+                )
+                setMensaje('Profesional desactivado correctamente.')
+            } else {
+                const actualizado = await activarProfesional(profesional.id)
+                setProfesionales((actuales) =>
+                    actuales.map((item) =>
+                        item.id === actualizado.id ? actualizado : item,
+                    ),
+                )
+                setMensaje('Profesional reactivado correctamente.')
+            }
         } catch (error) {
             setError(
                 obtenerMensajeError(

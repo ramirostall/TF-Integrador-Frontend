@@ -1,5 +1,12 @@
 import { http, HttpResponse } from 'msw'
-import { agendasFixture, pacientesFixture, usuariosFixture } from './fixtures'
+import {
+    agendasFixture,
+    horariosLibresFixture,
+    pacientesFixture,
+    profesionalesFixture,
+    turnosFixture,
+    usuariosFixture,
+} from './fixtures'
 
 export const handlers = [
     http.get('*/usuarios/email/:email', ({ params }) => {
@@ -132,5 +139,75 @@ export const handlers = [
         const base =
             agendasFixture.find((a) => a.id === id) ?? agendasFixture[0]
         return HttpResponse.json({ ...base, activo: true })
+    }),
+
+    http.get('*/profesionales', () => HttpResponse.json(profesionalesFixture)),
+    http.get('*/profesionales/:id', ({ params }) => {
+        const id = Number(params.id)
+        const profesional = profesionalesFixture.find((p) => p.id === id)
+        return profesional
+            ? HttpResponse.json(profesional)
+            : HttpResponse.json(
+                  { mensaje: 'Profesional no encontrado' },
+                  { status: 404 },
+              )
+    }),
+    http.post('*/profesionales', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json({ id: 3, ...body }, { status: 201 })
+    }),
+    http.put('*/profesionales/:id', async ({ params, request }) => {
+        const id = Number(params.id)
+        const body = (await request.json()) as Record<string, unknown>
+        const base =
+            profesionalesFixture.find((p) => p.id === id) ??
+            profesionalesFixture[0]
+        return HttpResponse.json({ ...base, ...body, id })
+    }),
+
+    // Va antes de /turnos/:id para que "horarios-libres" no se tome como id.
+    http.get('*/turnos/horarios-libres', () =>
+        HttpResponse.json(horariosLibresFixture),
+    ),
+    http.get('*/turnos', ({ request }) => {
+        const params = new URL(request.url).searchParams
+        const estado = params.get('estado')
+        const profesionalId = params.get('profesionalId')
+        return HttpResponse.json(
+            turnosFixture.filter(
+                (t) =>
+                    (!estado || t.estado === estado) &&
+                    (!profesionalId ||
+                        t.profesionalId === Number(profesionalId)),
+            ),
+        )
+    }),
+    http.get('*/turnos/:id', ({ params }) => {
+        const id = Number(params.id)
+        const turno = turnosFixture.find((t) => t.id === id)
+        return turno
+            ? HttpResponse.json(turno)
+            : HttpResponse.json(
+                  { mensaje: 'Turno no encontrado' },
+                  { status: 404 },
+              )
+    }),
+    http.post('*/turnos', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json(
+            { id: 3, estado: 'PENDIENTE', pacienteId: 10, ...body },
+            { status: 201 },
+        )
+    }),
+    http.put('*/turnos/:id', async ({ params, request }) => {
+        const id = Number(params.id)
+        const body = (await request.json()) as Record<string, unknown>
+        const base = turnosFixture.find((t) => t.id === id) ?? turnosFixture[0]
+        return HttpResponse.json({ ...base, ...body, id })
+    }),
+    http.delete('*/turnos/:id', ({ params }) => {
+        const id = Number(params.id)
+        const base = turnosFixture.find((t) => t.id === id) ?? turnosFixture[0]
+        return HttpResponse.json({ ...base, estado: 'CANCELADO' })
     }),
 ]

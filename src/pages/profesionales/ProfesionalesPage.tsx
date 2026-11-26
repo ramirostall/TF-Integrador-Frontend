@@ -1,21 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-    activarProfesional,
-    desactivarProfesional,
-    listarProfesionales,
-} from '../../services/profesionalService'
+import { obtenerUsuarioGuardado } from '../../services/authService'
+import { listarProfesionales } from '../../services/profesionalService'
 import type { Profesional } from '../../types/profesional'
 import { obtenerMensajeError } from '../../utils/errores'
 
-const ELEMENTOS_POR_PAGINA = 10
+const ELEMENTOS_POR_PAGINA = 12
 
 export function ProfesionalesPage() {
+    const esAdmin = obtenerUsuarioGuardado()?.rol === 'ADMIN'
+
     const [profesionales, setProfesionales] = useState<Profesional[]>([])
     const [error, setError] = useState('')
-    const [mensaje, setMensaje] = useState('')
     const [cargando, setCargando] = useState(true)
-    const [procesandoId, setProcesandoId] = useState<number | null>(null)
     const [busqueda, setBusqueda] = useState('')
     const [paginaActual, setPaginaActual] = useState(1)
 
@@ -46,24 +43,11 @@ export function ProfesionalesPage() {
             return profesionales
         }
 
-        return profesionales.filter((profesional) => {
-            const nombre = profesional.nombre?.toLowerCase() ?? ''
-            const apellido = profesional.apellido?.toLowerCase() ?? ''
-            const dni = profesional.dni?.toLowerCase() ?? ''
-            const email = profesional.email?.toLowerCase() ?? ''
-            const telefono = profesional.telefono?.toLowerCase() ?? ''
-            const especialidad = profesional.especialidad?.toLowerCase() ?? ''
-
-            return (
-                nombre.includes(termino) ||
-                apellido.includes(termino) ||
-                dni.includes(termino) ||
-                email.includes(termino) ||
-                telefono.includes(termino) ||
-                especialidad.includes(termino) ||
-                String(profesional.id).includes(termino)
-            )
-        })
+        return profesionales.filter((profesional) =>
+            [profesional.nombre, profesional.apellido, profesional.especialidad]
+                .map((valor) => valor?.toLowerCase() ?? '')
+                .some((valor) => valor.includes(termino)),
+        )
     }, [profesionales, busqueda])
 
     const totalPaginas = Math.max(
@@ -75,55 +59,21 @@ export function ProfesionalesPage() {
 
     const profesionalesPaginados = useMemo(() => {
         const inicio = (paginaSegura - 1) * ELEMENTOS_POR_PAGINA
-        const fin = inicio + ELEMENTOS_POR_PAGINA
-
-        return profesionalesFiltrados.slice(inicio, fin)
+        return profesionalesFiltrados.slice(
+            inicio,
+            inicio + ELEMENTOS_POR_PAGINA,
+        )
     }, [profesionalesFiltrados, paginaSegura])
-
-    async function handleCambiarEstado(profesional: Profesional) {
-        setError('')
-        setMensaje('')
-        setProcesandoId(profesional.id)
-
-        try {
-            if (profesional.activo) {
-                await desactivarProfesional(profesional.id)
-                setProfesionales((actuales) =>
-                    actuales.map((item) =>
-                        item.id === profesional.id
-                            ? { ...item, activo: false }
-                            : item,
-                    ),
-                )
-                setMensaje('Profesional desactivado correctamente.')
-            } else {
-                const actualizado = await activarProfesional(profesional.id)
-                setProfesionales((actuales) =>
-                    actuales.map((item) =>
-                        item.id === actualizado.id ? actualizado : item,
-                    ),
-                )
-                setMensaje('Profesional reactivado correctamente.')
-            }
-        } catch (error) {
-            setError(
-                obtenerMensajeError(
-                    error,
-                    'No se pudo cambiar el estado del profesional.',
-                ),
-            )
-        } finally {
-            setProcesandoId(null)
-        }
-    }
 
     return (
         <main>
             <h1>Profesionales</h1>
 
-            <p>
-                <Link to="/profesionales/nuevo">Crear profesional</Link>
-            </p>
+            {esAdmin && (
+                <p>
+                    <Link to="/profesionales/nuevo">Crear profesional</Link>
+                </p>
+            )}
 
             {error && (
                 <p role="alert" className="mensaje-error">
@@ -131,13 +81,11 @@ export function ProfesionalesPage() {
                 </p>
             )}
 
-            {mensaje && <p className="mensaje-exito">{mensaje}</p>}
-
             {!cargando && profesionales.length > 0 && (
                 <div style={{ marginTop: '16px', marginBottom: '12px' }}>
                     <input
                         type="search"
-                        placeholder="Buscar por nombre, apellido, DNI, email, teléfono o especialidad..."
+                        placeholder="Buscar por nombre, apellido o especialidad..."
                         value={busqueda}
                         onChange={(e) => {
                             setBusqueda(e.target.value)
@@ -152,7 +100,7 @@ export function ProfesionalesPage() {
             {cargando ? (
                 <p>Cargando profesionales...</p>
             ) : profesionales.length === 0 ? (
-                <p>No hay profesionales registrados.</p>
+                !error && <p>No hay profesionales registrados.</p>
             ) : profesionalesFiltrados.length === 0 ? (
                 <p>
                     No se encontraron profesionales con ese criterio de
@@ -160,64 +108,19 @@ export function ProfesionalesPage() {
                 </p>
             ) : (
                 <>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Apellido</th>
-                                <th>DNI</th>
-                                <th>Email</th>
-                                <th>Teléfono</th>
-                                <th>Especialidad</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {profesionalesPaginados.map((profesional) => (
-                                <tr key={profesional.id}>
-                                    <td>{profesional.nombre}</td>
-                                    <td>{profesional.apellido}</td>
-                                    <td>{profesional.dni}</td>
-                                    <td>{profesional.email}</td>
-                                    <td>{profesional.telefono}</td>
-                                    <td>{profesional.especialidad}</td>
-                                    <td>
-                                        {profesional.activo
-                                            ? 'Activo'
-                                            : 'Inactivo'}
-                                    </td>
-                                    <td>
-                                        <div className="acciones">
-                                            <Link
-                                                to={`/profesionales/${profesional.id}`}
-                                            >
-                                                Ver
-                                            </Link>
-
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    handleCambiarEstado(
-                                                        profesional,
-                                                    )
-                                                }
-                                                disabled={
-                                                    procesandoId ===
-                                                    profesional.id
-                                                }
-                                            >
-                                                {profesional.activo
-                                                    ? 'Desactivar'
-                                                    : 'Reactivar'}
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <ul className="tarjetas">
+                        {profesionalesPaginados.map((profesional) => (
+                            <li key={profesional.id} className="tarjeta">
+                                <h2>
+                                    {profesional.nombre} {profesional.apellido}
+                                </h2>
+                                <p>{profesional.especialidad}</p>
+                                <Link to={`/profesionales/${profesional.id}`}>
+                                    Ver detalle
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
 
                     <div
                         style={{

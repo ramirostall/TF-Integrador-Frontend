@@ -4,6 +4,7 @@ import type {
     CrearTurno,
     ActualizarTurno,
     FiltrosTurnos,
+    HorarioLibre,
 } from '../types/turno'
 
 export async function listarTurnos(filtros?: FiltrosTurnos): Promise<Turno[]> {
@@ -15,6 +16,16 @@ export async function listarTurnos(filtros?: FiltrosTurnos): Promise<Turno[]> {
 
 export async function obtenerTurnoPorId(id: number): Promise<Turno> {
     const respuesta = await api.get<Turno>(`/turnos/${id}`)
+    return respuesta.data
+}
+
+export async function obtenerHorariosLibres(
+    profesionalId: number,
+    fecha: string,
+): Promise<HorarioLibre[]> {
+    const respuesta = await api.get<HorarioLibre[]>('/turnos/horarios-libres', {
+        params: { profesionalId, fecha },
+    })
     return respuesta.data
 }
 
@@ -32,6 +43,6 @@ export async function modificarTurno(
 }
 
 export async function cancelarTurno(id: number): Promise<Turno> {
-    const respuesta = await api.patch<Turno>(`/turnos/${id}/cancelar`)
+    const respuesta = await api.delete<Turno>(`/turnos/${id}`)
     return respuesta.data
 }

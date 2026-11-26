@@ -2,9 +2,7 @@ import type { AxiosResponse } from 'axios'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { api } from '../api'
 import {
-    activarProfesional,
     crearProfesional,
-    desactivarProfesional,
     listarProfesionales,
     modificarProfesional,
     obtenerProfesionalPorId,
@@ -28,14 +26,13 @@ function response<T>(data: T): AxiosResponse<T> {
 
 const profesionalBase = {
     id: 1,
+    usuarioId: 2,
     nombre: 'Juan',
     apellido: 'Pérez',
     dni: '12345678',
     telefono: '123456789',
-    email: 'juan@test.com',
     especialidad: 'Cardiología',
     matricula: 'MP12345',
-    activo: true,
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
 }
@@ -52,6 +49,19 @@ describe('profesionalService', () => {
         expect(mockedApi.get).toHaveBeenCalledWith('/profesionales')
     })
 
+    it('listarProfesionales devuelve la vista reducida tal cual llega', async () => {
+        const data = [
+            {
+                id: 1,
+                nombre: 'Juan',
+                apellido: 'Pérez',
+                especialidad: 'Cardiología',
+            },
+        ]
+        mockedApi.get.mockResolvedValue(response(data))
+        await expect(listarProfesionales()).resolves.toEqual(data)
+    })
+
     it('obtenerProfesionalPorId hace GET /profesionales/:id', async () => {
         mockedApi.get.mockResolvedValue(response(profesionalBase))
         await expect(obtenerProfesionalPorId(1)).resolves.toEqual(
@@ -62,15 +72,13 @@ describe('profesionalService', () => {
 
     it('crearProfesional hace POST /profesionales con payload', async () => {
         const payload = {
+            usuarioId: 2,
             nombre: 'Juan',
             apellido: 'Pérez',
             dni: '12345678',
             telefono: '123456789',
-            email: 'juan@test.com',
-            password: 'secret123',
             especialidad: 'Cardiología',
             matricula: 'MP12345',
-            activo: true,
         }
         mockedApi.post.mockResolvedValue(
             response({ ...profesionalBase, ...payload }),
@@ -89,19 +97,5 @@ describe('profesionalService', () => {
 
         await expect(modificarProfesional(1, payload)).resolves.toEqual(data)
         expect(mockedApi.put).toHaveBeenCalledWith('/profesionales/1', payload)
-    })
-
-    it('desactivarProfesional hace PATCH /profesionales/:id/desactivar', async () => {
-        mockedApi.patch.mockResolvedValue(response(undefined))
-        await expect(desactivarProfesional(1)).resolves.toBeUndefined()
-        expect(mockedApi.patch).toHaveBeenCalledWith(
-            '/profesionales/1/desactivar',
-        )
-    })
-
-    it('activarProfesional hace PATCH /profesionales/:id/activar', async () => {
-        mockedApi.patch.mockResolvedValue(response(profesionalBase))
-        await expect(activarProfesional(1)).resolves.toEqual(profesionalBase)
-        expect(mockedApi.patch).toHaveBeenCalledWith('/profesionales/1/activar')
     })
 })

@@ -1,59 +1,153 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { crearTurno } from '../../services/turnoService'
-import type { CrearTurno } from '../../types/turno'
+import { obtenerUsuarioGuardado } from '../../services/authService'
+import { listarPacientes } from '../../services/pacienteService'
+import { listarProfesionales } from '../../services/profesionalService'
+import { crearTurno, obtenerHorariosLibres } from '../../services/turnoService'
+import type { Paciente } from '../../types/paciente'
+import type { Profesional } from '../../types/profesional'
+import type { HorarioLibre } from '../../types/turno'
 import { obtenerMensajeError } from '../../utils/errores'
+import { fechaHoy, nombreCompleto } from '../../utils/formato'
+
+function claveHorario(horario: HorarioLibre): string {
+    return `${horario.agendaId}|${horario.hora}`
+}
 
 export function CrearTurnoPage() {
-    const [datos, setDatos] = useState<CrearTurno>({
-        profesionalId: 0,
-        pacienteId: 0,
-        agendaId: 0,
-        fecha: '',
-        hora: '',
-        duracion: 30,
-        notas: '',
-    })
+    const navigate = useNavigate()
+    const esAdmin = obtenerUsuarioGuardado()?.rol === 'ADMIN'
+
+    const [pacientes, setPacientes] = useState<Paciente[]>([])
+    const [profesionales, setProfesionales] = useState<Profesional[]>([])
+    // null = todavía no se cargaron para el profesional y la fecha elegidos.
+    const [horarios, setHorarios] = useState<HorarioLibre[] | null>(null)
+
+    const [pacienteId, setPacienteId] = useState('')
+    const [profesionalId, setProfesionalId] = useState('')
+    const [fecha, setFecha] = useState('')
+    const [horarioElegido, setHorarioElegido] = useState('')
+    const [motivo, setMotivo] = useState('')
+    const [observaciones, setObservaciones] = useState('')
+
     const [error, setError] = useState('')
     const [mensaje, setMensaje] = useState('')
-    const [cargando, setCargando] = useState(false)
+    const [cargandoInicial, setCargandoInicial] = useState(true)
+    const [guardando, setGuardando] = useState(false)
 
-    const navigate = useNavigate()
-
-    function handleChange(campo: keyof CrearTurno, valor: string) {
-        setDatos((actual: CrearTurno) => {
-            if (
-                campo === 'profesionalId' ||
-                campo === 'pacienteId' ||
-                campo === 'agendaId' ||
-                campo === 'duracion'
-            ) {
-                return { ...actual, [campo]: Number(valor) }
+    useEffect(() => {
+        async function cargarOpciones() {
+            try {
+                const [listaProfesionales, listaPacientes] = await Promise.all([
+                    listarProfesionales(),
+                    esAdmin
+                        ? listarPacientes()
+                        : Promise.resolve<Paciente[]>([]),
+                ])
+                setProfesionales(listaProfesionales)
+                setPacientes(listaPacientes)
+            } catch (error) {
+                setError(
+                    obtenerMensajeError(
+                        error,
+                        'No se pudieron cargar los datos del formulario.',
+                    ),
+                )
+            } finally {
+                setCargandoInicial(false)
             }
-            return { ...actual, [campo]: valor }
-        })
+        }
+
+        cargarOpciones()
+    }, [esAdmin])
+
+    useEffect(() => {
+        if (!profesionalId || !fecha) {
+            return
+        }
+
+        let vigente = true
+
+        async function cargarHorarios() {
+            try {
+                const libres = await obtenerHorariosLibres(
+                    Number(profesionalId),
+                    fecha,
+                )
+                if (vigente) setHorarios(libres)
+            } catch (error) {
+                if (vigente) {
+                    setHorarios([])
+                    setError(
+                        obtenerMensajeError(
+                            error,
+                            'No se pudieron cargar los horarios libres.',
+                        ),
+                    )
+                }
+            }
+        }
+
+        cargarHorarios()
+
+        return () => {
+            vigente = false
+        }
+    }, [profesionalId, fecha])
+
+    function handleCambiarProfesional(valor: string) {
+        setProfesionalId(valor)
+        setHorarios(null)
+        setHorarioElegido('')
+    }
+
+    function handleCambiarFecha(valor: string) {
+        setFecha(valor)
+        setHorarios(null)
+        setHorarioElegido('')
     }
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
+
+        const horario = horarios?.find(
+            (h) => claveHorario(h) === horarioElegido,
+        )
+        if (!horario) {
+            setError('Seleccioná un horario.')
+            return
+        }
+
         setError('')
         setMensaje('')
-        setCargando(true)
+        setGuardando(true)
 
         try {
-            await crearTurno(datos)
-            setMensaje('Turno creado correctamente.')
+            await crearTurno({
+                ...(esAdmin ? { pacienteId: Number(pacienteId) } : {}),
+                profesionalId: Number(profesionalId),
+                agendaId: horario.agendaId,
+                fecha,
+                hora: horario.hora,
+                motivo,
+                ...(observaciones.trim()
+                    ? { observaciones: observaciones.trim() }
+                    : {}),
+            })
+            setMensaje('Turno reservado correctamente.')
             setTimeout(() => navigate('/turnos'), 1500)
         } catch (error) {
             setError(obtenerMensajeError(error, 'No se pudo crear el turno.'))
         } finally {
-            setCargando(false)
+            setGuardando(false)
         }
     }
 
+    const mostrarHorarios = !!profesionalId && !!fecha
+
     return (
         <main>
-            <h1>Crear Turno</h1>
+            <h1>Pedir turno</h1>
 
             <p>
                 <Link to="/turnos">Volver al listado</Link>
@@ -67,102 +161,144 @@ export function CrearTurnoPage() {
 
             {mensaje && <p className="mensaje-exito">{mensaje}</p>}
 
-            {!mensaje && (
-                <form onSubmit={handleSubmit}>
-                    <div>
-                        <label htmlFor="profesionalId">ID Profesional</label>
-                        <input
-                            id="profesionalId"
-                            type="number"
-                            value={datos.profesionalId}
-                            onChange={(e) =>
-                                handleChange('profesionalId', e.target.value)
-                            }
-                            required
-                        />
-                    </div>
+            {cargandoInicial ? (
+                <p>Cargando...</p>
+            ) : (
+                !mensaje && (
+                    <form onSubmit={handleSubmit}>
+                        {esAdmin && (
+                            <div>
+                                <label htmlFor="pacienteId">Paciente</label>
+                                <select
+                                    id="pacienteId"
+                                    value={pacienteId}
+                                    onChange={(e) =>
+                                        setPacienteId(e.target.value)
+                                    }
+                                    required
+                                >
+                                    <option value="">
+                                        Seleccioná un paciente
+                                    </option>
+                                    {pacientes.map((paciente) => (
+                                        <option
+                                            key={paciente.id}
+                                            value={paciente.id}
+                                        >
+                                            {nombreCompleto(paciente)} (DNI{' '}
+                                            {paciente.dni})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
 
-                    <div>
-                        <label htmlFor="pacienteId">ID Paciente</label>
-                        <input
-                            id="pacienteId"
-                            type="number"
-                            value={datos.pacienteId}
-                            onChange={(e) =>
-                                handleChange('pacienteId', e.target.value)
-                            }
-                            required
-                        />
-                    </div>
+                        <div>
+                            <label htmlFor="profesionalId">Profesional</label>
+                            <select
+                                id="profesionalId"
+                                value={profesionalId}
+                                onChange={(e) =>
+                                    handleCambiarProfesional(e.target.value)
+                                }
+                                required
+                            >
+                                <option value="">
+                                    Seleccioná un profesional
+                                </option>
+                                {profesionales.map((profesional) => (
+                                    <option
+                                        key={profesional.id}
+                                        value={profesional.id}
+                                    >
+                                        {nombreCompleto(profesional)} -{' '}
+                                        {profesional.especialidad}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                    <div>
-                        <label htmlFor="agendaId">ID Agenda</label>
-                        <input
-                            id="agendaId"
-                            type="number"
-                            value={datos.agendaId}
-                            onChange={(e) =>
-                                handleChange('agendaId', e.target.value)
-                            }
-                            required
-                        />
-                    </div>
+                        <div>
+                            <label htmlFor="fecha">Fecha</label>
+                            <input
+                                id="fecha"
+                                type="date"
+                                min={fechaHoy()}
+                                value={fecha}
+                                onChange={(e) =>
+                                    handleCambiarFecha(e.target.value)
+                                }
+                                required
+                            />
+                        </div>
 
-                    <div>
-                        <label htmlFor="fecha">Fecha</label>
-                        <input
-                            id="fecha"
-                            type="date"
-                            value={datos.fecha}
-                            onChange={(e) =>
-                                handleChange('fecha', e.target.value)
-                            }
-                            required
-                        />
-                    </div>
+                        {mostrarHorarios &&
+                            (horarios === null ? (
+                                <p>Buscando horarios libres...</p>
+                            ) : horarios.length === 0 ? (
+                                <p>
+                                    No hay horarios libres para ese día. Probá
+                                    con otra fecha.
+                                </p>
+                            ) : (
+                                <div>
+                                    <label htmlFor="horario">Horario</label>
+                                    <select
+                                        id="horario"
+                                        value={horarioElegido}
+                                        onChange={(e) =>
+                                            setHorarioElegido(e.target.value)
+                                        }
+                                        required
+                                    >
+                                        <option value="">
+                                            Seleccioná un horario
+                                        </option>
+                                        {horarios.map((horario) => (
+                                            <option
+                                                key={claveHorario(horario)}
+                                                value={claveHorario(horario)}
+                                            >
+                                                {horario.hora}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ))}
 
-                    <div>
-                        <label htmlFor="hora">Hora</label>
-                        <input
-                            id="hora"
-                            type="time"
-                            value={datos.hora}
-                            onChange={(e) =>
-                                handleChange('hora', e.target.value)
-                            }
-                            required
-                        />
-                    </div>
+                        <div>
+                            <label htmlFor="motivo">Motivo</label>
+                            <input
+                                id="motivo"
+                                type="text"
+                                value={motivo}
+                                onChange={(e) => setMotivo(e.target.value)}
+                                required
+                            />
+                        </div>
 
-                    <div>
-                        <label htmlFor="duracion">Duración (minutos)</label>
-                        <input
-                            id="duracion"
-                            type="number"
-                            value={datos.duracion}
-                            onChange={(e) =>
-                                handleChange('duracion', e.target.value)
-                            }
-                            required
-                        />
-                    </div>
+                        <div>
+                            <label htmlFor="observaciones">
+                                Observaciones (opcional)
+                            </label>
+                            <textarea
+                                id="observaciones"
+                                value={observaciones}
+                                onChange={(e) =>
+                                    setObservaciones(e.target.value)
+                                }
+                                rows={3}
+                            />
+                        </div>
 
-                    <div>
-                        <label htmlFor="notas">Notas</label>
-                        <textarea
-                            id="notas"
-                            value={datos.notas}
-                            onChange={(e) =>
-                                handleChange('notas', e.target.value)
-                            }
-                            rows={3}
-                        />
-                    </div>
-
-                    <button type="submit" disabled={cargando}>
-                        {cargando ? 'Creando...' : 'Crear turno'}
-                    </button>
-                </form>
+                        <button
+                            type="submit"
+                            disabled={guardando || !horarioElegido}
+                        >
+                            {guardando ? 'Reservando...' : 'Reservar turno'}
+                        </button>
+                    </form>
+                )
             )}
         </main>
     )

@@ -1,13 +1,32 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { obtenerUsuarioGuardado } from '../../services/authService'
+import { listarPacientes } from '../../services/pacienteService'
+import { listarProfesionales } from '../../services/profesionalService'
 import { cancelarTurno, listarTurnos } from '../../services/turnoService'
-import type { Turno, EstadoTurno, FiltrosTurnos } from '../../types/turno'
+import type { Paciente } from '../../types/paciente'
+import type { Profesional } from '../../types/profesional'
+import {
+    ESTADOS_CANCELABLES,
+    ESTADOS_TURNO,
+    type EstadoTurno,
+    type FiltrosTurnos,
+    type Turno,
+} from '../../types/turno'
 import { obtenerMensajeError } from '../../utils/errores'
+import { formatearHora, nombreCompleto } from '../../utils/formato'
 
 const ELEMENTOS_POR_PAGINA = 10
 
 export function TurnosPage() {
+    const rol = obtenerUsuarioGuardado()?.rol
+    const esAdmin = rol === 'ADMIN'
+    const puedeCancelar = rol === 'ADMIN' || rol === 'PACIENTE'
+    const puedePedir = rol === 'ADMIN' || rol === 'PACIENTE'
+
     const [turnos, setTurnos] = useState<Turno[]>([])
+    const [profesionales, setProfesionales] = useState<Profesional[]>([])
+    const [pacientes, setPacientes] = useState<Paciente[]>([])
     const [error, setError] = useState('')
     const [mensaje, setMensaje] = useState('')
     const [cargando, setCargando] = useState(true)
@@ -17,23 +36,55 @@ export function TurnosPage() {
     const [paginaActual, setPaginaActual] = useState(1)
 
     useEffect(() => {
-        async function cargarTurnos() {
+        if (!esAdmin) return
+
+        async function cargarOpcionesFiltros() {
             try {
-                const datos = await listarTurnos(filtros)
-                setTurnos(datos)
+                const [listaProfesionales, listaPacientes] = await Promise.all([
+                    listarProfesionales(),
+                    listarPacientes(),
+                ])
+                setProfesionales(listaProfesionales)
+                setPacientes(listaPacientes)
             } catch (error) {
                 setError(
                     obtenerMensajeError(
                         error,
-                        'No se pudieron cargar los turnos.',
+                        'No se pudieron cargar los filtros.',
                     ),
                 )
+            }
+        }
+
+        cargarOpcionesFiltros()
+    }, [esAdmin])
+
+    useEffect(() => {
+        let vigente = true
+
+        async function cargarTurnos() {
+            try {
+                const datos = await listarTurnos(filtros)
+                if (vigente) setTurnos(datos)
+            } catch (error) {
+                if (vigente) {
+                    setError(
+                        obtenerMensajeError(
+                            error,
+                            'No se pudieron cargar los turnos.',
+                        ),
+                    )
+                }
             } finally {
-                setCargando(false)
+                if (vigente) setCargando(false)
             }
         }
 
         cargarTurnos()
+
+        return () => {
+            vigente = false
+        }
     }, [filtros])
 
     const turnosFiltrados = useMemo(() => {
@@ -43,15 +94,18 @@ export function TurnosPage() {
             return turnos
         }
 
-        return turnos.filter((turno) => {
-            return (
-                String(turno.id).includes(termino) ||
-                turno.estado?.toLowerCase().includes(termino) ||
-                String(turno.profesionalId).includes(termino) ||
-                String(turno.pacienteId).includes(termino) ||
-                String(turno.agendaId).includes(termino)
-            )
-        })
+        return turnos.filter((turno) =>
+            [
+                nombreCompleto(turno.profesional),
+                turno.profesional?.especialidad ?? '',
+                nombreCompleto(turno.paciente),
+                turno.motivo ?? '',
+                turno.estado,
+                turno.fecha,
+            ]
+                .map((valor) => valor.toLowerCase())
+                .some((valor) => valor.includes(termino)),
+        )
     }, [turnos, busqueda])
 
     const totalPaginas = Math.max(
@@ -63,12 +117,12 @@ export function TurnosPage() {
 
     const turnosPaginados = useMemo(() => {
         const inicio = (paginaSegura - 1) * ELEMENTOS_POR_PAGINA
-        const fin = inicio + ELEMENTOS_POR_PAGINA
-
-        return turnosFiltrados.slice(inicio, fin)
+        return turnosFiltrados.slice(inicio, inicio + ELEMENTOS_POR_PAGINA)
     }, [turnosFiltrados, paginaSegura])
 
     async function handleCancelarTurno(turno: Turno) {
+        if (!window.confirm('¿Seguro que querés cancelar este turno?')) return
+
         setError('')
         setMensaje('')
         setProcesandoId(turno.id)
@@ -96,51 +150,80 @@ export function TurnosPage() {
 
     function handleCambiarFiltro(campo: keyof FiltrosTurnos, valor: string) {
         setPaginaActual(1)
-        if (valor === '') {
-            const resto = { ...filtros }
-            delete resto[campo]
-            setFiltros(resto)
-        } else {
-            setFiltros((actual: FiltrosTurnos) => ({
-                ...actual,
-                [campo]: valor,
-            }))
-        }
+        setCargando(true)
+        setError('')
+        setFiltros((actual) => {
+            const siguiente = { ...actual }
+            if (valor === '') {
+                delete siguiente[campo]
+            } else if (campo === 'profesionalId' || campo === 'pacienteId') {
+                siguiente[campo] = Number(valor)
+            } else if (campo === 'estado') {
+                siguiente.estado = valor as EstadoTurno
+            } else {
+                siguiente.fecha = valor
+            }
+            return siguiente
+        })
     }
+
+    const hayFiltros = Object.keys(filtros).length > 0
 
     return (
         <main>
             <h1>Turnos</h1>
 
-            <p>
-                <Link to="/turnos/nuevo">Crear turno</Link>
-            </p>
-
-            {!cargando && turnos.length > 0 && (
-                <div style={{ marginTop: '16px', marginBottom: '12px' }}>
-                    <input
-                        type="search"
-                        placeholder="Buscar por ID, estado o profesionales..."
-                        value={busqueda}
-                        onChange={(e) => {
-                            setBusqueda(e.target.value)
-                            setPaginaActual(1)
-                        }}
-                        aria-label="Buscar turnos"
-                        style={{ maxWidth: '360px' }}
-                    />
-                </div>
+            {puedePedir && (
+                <p>
+                    <Link to="/turnos/nuevo">Pedir turno</Link>
+                </p>
             )}
 
-            {!cargando && turnos.length > 0 && (
-                <div
-                    style={{
-                        marginBottom: '12px',
-                        display: 'flex',
-                        gap: '12px',
-                        flexWrap: 'wrap',
-                    }}
-                >
+            {esAdmin && (
+                <div className="filtros">
+                    <div>
+                        <label htmlFor="filtro-profesional">Profesional</label>
+                        <select
+                            id="filtro-profesional"
+                            value={filtros.profesionalId ?? ''}
+                            onChange={(e) =>
+                                handleCambiarFiltro(
+                                    'profesionalId',
+                                    e.target.value,
+                                )
+                            }
+                        >
+                            <option value="">Todos</option>
+                            {profesionales.map((profesional) => (
+                                <option
+                                    key={profesional.id}
+                                    value={profesional.id}
+                                >
+                                    {nombreCompleto(profesional)}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="filtro-paciente">Paciente</label>
+                        <select
+                            id="filtro-paciente"
+                            value={filtros.pacienteId ?? ''}
+                            onChange={(e) =>
+                                handleCambiarFiltro(
+                                    'pacienteId',
+                                    e.target.value,
+                                )
+                            }
+                        >
+                            <option value="">Todos</option>
+                            {pacientes.map((paciente) => (
+                                <option key={paciente.id} value={paciente.id}>
+                                    {nombreCompleto(paciente)}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <div>
                         <label htmlFor="filtro-estado">Estado</label>
                         <select
@@ -149,13 +232,13 @@ export function TurnosPage() {
                             onChange={(e) =>
                                 handleCambiarFiltro('estado', e.target.value)
                             }
-                            style={{ marginTop: '4px' }}
                         >
                             <option value="">Todos</option>
-                            <option value="PENDIENTE">Pendiente</option>
-                            <option value="CONFIRMADO">Confirmado</option>
-                            <option value="CANCELADO">Cancelado</option>
-                            <option value="COMPLETADO">Completado</option>
+                            {ESTADOS_TURNO.map((estado) => (
+                                <option key={estado} value={estado}>
+                                    {estado}
+                                </option>
+                            ))}
                         </select>
                     </div>
                     <div>
@@ -167,9 +250,24 @@ export function TurnosPage() {
                             onChange={(e) =>
                                 handleCambiarFiltro('fecha', e.target.value)
                             }
-                            style={{ marginTop: '4px' }}
                         />
                     </div>
+                </div>
+            )}
+
+            {!cargando && turnos.length > 0 && (
+                <div style={{ marginBottom: '12px' }}>
+                    <input
+                        type="search"
+                        placeholder="Buscar por profesional, paciente, motivo o estado..."
+                        value={busqueda}
+                        onChange={(e) => {
+                            setBusqueda(e.target.value)
+                            setPaginaActual(1)
+                        }}
+                        aria-label="Buscar turnos"
+                        style={{ maxWidth: '400px' }}
+                    />
                 </div>
             )}
 
@@ -184,7 +282,13 @@ export function TurnosPage() {
             {cargando ? (
                 <p>Cargando turnos...</p>
             ) : turnos.length === 0 ? (
-                <p>No hay turnos registrados.</p>
+                !error && (
+                    <p>
+                        {hayFiltros
+                            ? 'No hay turnos con esos filtros.'
+                            : 'No hay turnos registrados.'}
+                    </p>
+                )
             ) : turnosFiltrados.length === 0 ? (
                 <p>No se encontraron turnos con ese criterio de búsqueda.</p>
             ) : (
@@ -192,13 +296,11 @@ export function TurnosPage() {
                     <table>
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Profesional</th>
-                                <th>Paciente</th>
-                                <th>Agenda</th>
                                 <th>Fecha</th>
                                 <th>Hora</th>
-                                <th>Duración</th>
+                                <th>Profesional</th>
+                                {rol !== 'PACIENTE' && <th>Paciente</th>}
+                                <th>Motivo</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -207,13 +309,19 @@ export function TurnosPage() {
                         <tbody>
                             {turnosPaginados.map((turno) => (
                                 <tr key={turno.id}>
-                                    <td>{turno.id}</td>
-                                    <td>{turno.profesionalId}</td>
-                                    <td>{turno.pacienteId}</td>
-                                    <td>{turno.agendaId}</td>
                                     <td>{turno.fecha}</td>
-                                    <td>{turno.hora}</td>
-                                    <td>{turno.duracion} min</td>
+                                    <td>{formatearHora(turno.hora)}</td>
+                                    <td>
+                                        {nombreCompleto(turno.profesional)}
+                                        {turno.profesional?.especialidad &&
+                                            ` (${turno.profesional.especialidad})`}
+                                    </td>
+                                    {rol !== 'PACIENTE' && (
+                                        <td>
+                                            {nombreCompleto(turno.paciente)}
+                                        </td>
+                                    )}
+                                    <td>{turno.motivo}</td>
                                     <td>
                                         <span
                                             className={`estado-${turno.estado.toLowerCase()}`}
@@ -227,22 +335,25 @@ export function TurnosPage() {
                                                 Ver
                                             </Link>
 
-                                            {turno.estado !== 'CANCELADO' && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        handleCancelarTurno(
-                                                            turno,
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        procesandoId ===
-                                                        turno.id
-                                                    }
-                                                >
-                                                    Cancelar
-                                                </button>
-                                            )}
+                                            {puedeCancelar &&
+                                                ESTADOS_CANCELABLES.includes(
+                                                    turno.estado,
+                                                ) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleCancelarTurno(
+                                                                turno,
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            procesandoId ===
+                                                            turno.id
+                                                        }
+                                                    >
+                                                        Cancelar
+                                                    </button>
+                                                )}
                                         </div>
                                     </td>
                                 </tr>

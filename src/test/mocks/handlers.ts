@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw'
 import {
     agendasFixture,
     horariosLibresFixture,
+    espaciosFixture,
     pacientesFixture,
     profesionalesFixture,
     turnosFixture,
@@ -140,6 +141,79 @@ export const handlers = [
             agendasFixture.find((a) => a.id === id) ?? agendasFixture[0]
         return HttpResponse.json({ ...base, activo: true })
     }),
+
+    // /ocupacion va antes de /:id para que "ocupacion" no se interprete como id.
+    http.get('*/espacios/ocupacion', () => HttpResponse.json({ data: [] })),
+    http.get('*/espacios', ({ request }) => {
+        const url = new URL(request.url)
+        const activo = url.searchParams.get('activo')
+        const tipo = url.searchParams.get('tipo')
+        const ubicacion = url.searchParams.get('ubicacion')
+
+        let resultado = [...espaciosFixture]
+
+        if (activo !== null) {
+            resultado = resultado.filter(
+                (espacio) => espacio.activo === (activo === 'true'),
+            )
+        }
+        if (tipo) {
+            resultado = resultado.filter((espacio) => espacio.tipo === tipo)
+        }
+        if (ubicacion) {
+            resultado = resultado.filter(
+                (espacio) => espacio.ubicacion === ubicacion,
+            )
+        }
+
+        return HttpResponse.json(resultado)
+    }),
+    http.get('*/espacios/:id', ({ params }) => {
+        const id = Number(params.id)
+        const espacio = espaciosFixture.find((e) => e.id === id)
+        return espacio
+            ? HttpResponse.json(espacio)
+            : HttpResponse.json(
+                  { mensaje: 'Espacio no encontrado' },
+                  { status: 404 },
+              )
+    }),
+    http.post('*/espacios', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json(
+            {
+                id: 99,
+                activo: true,
+                createdAt: '2026-01-03T00:00:00Z',
+                updatedAt: '2026-01-03T00:00:00Z',
+                ...body,
+            },
+            { status: 201 },
+        )
+    }),
+    http.put('*/espacios/:id', async ({ params, request }) => {
+        const id = Number(params.id)
+        const body = (await request.json()) as Record<string, unknown>
+        const base =
+            espaciosFixture.find((e) => e.id === id) ?? espaciosFixture[0]
+        return HttpResponse.json({ ...base, ...body, id })
+    }),
+    http.patch('*/espacios/:id/desactivar', ({ params }) => {
+        const id = Number(params.id)
+        const base =
+            espaciosFixture.find((e) => e.id === id) ?? espaciosFixture[0]
+        return HttpResponse.json({ ...base, id, activo: false })
+    }),
+    http.patch('*/espacios/:id/reactivar', ({ params }) => {
+        const id = Number(params.id)
+        const base =
+            espaciosFixture.find((e) => e.id === id) ?? espaciosFixture[0]
+        return HttpResponse.json({ ...base, id, activo: true })
+    }),
+    http.delete(
+        '*/espacios/:id',
+        () => new HttpResponse(null, { status: 204 }),
+    ),
 
     http.get('*/profesionales', () => HttpResponse.json(profesionalesFixture)),
     http.get('*/profesionales/:id', ({ params }) => {

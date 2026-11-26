@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import {
     agendasFixture,
+    asignacionesEspacioFixture,
     horariosLibresFixture,
     espaciosFixture,
     pacientesFixture,
@@ -212,6 +213,74 @@ export const handlers = [
     }),
     http.delete(
         '*/espacios/:id',
+        () => new HttpResponse(null, { status: 204 }),
+    ),
+
+    http.get('*/asignaciones-espacio', ({ request }) => {
+        const url = new URL(request.url)
+        const espacioId = url.searchParams.get('espacioId')
+        const profesionalId = url.searchParams.get('profesionalId')
+        const tipo = url.searchParams.get('tipo')
+
+        let resultado = [...asignacionesEspacioFixture]
+
+        if (espacioId) {
+            resultado = resultado.filter(
+                (a) => a.espacioId === Number(espacioId),
+            )
+        }
+        if (profesionalId) {
+            resultado = resultado.filter(
+                (a) => a.profesionalId === Number(profesionalId),
+            )
+        }
+        if (tipo) {
+            resultado = resultado.filter((a) => a.tipo === tipo)
+        }
+
+        return HttpResponse.json(resultado)
+    }),
+    http.get('*/asignaciones-espacio/:id', ({ params }) => {
+        const id = Number(params.id)
+        const asignacion = asignacionesEspacioFixture.find((a) => a.id === id)
+        return asignacion
+            ? HttpResponse.json(asignacion)
+            : HttpResponse.json(
+                  { mensaje: 'Asignación no encontrada' },
+                  { status: 404 },
+              )
+    }),
+    http.post('*/asignaciones-espacio', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json(
+            {
+                id: 99,
+                createdAt: '2026-01-03T00:00:00Z',
+                updatedAt: '2026-01-03T00:00:00Z',
+                profesional: { id: 1, nombre: 'Ana', apellido: 'Lopez' },
+                espacio: {
+                    id: 1,
+                    nombre: 'Gimnasio Adelante',
+                    tipo: 'GIMNASIO',
+                    ubicacion: 'ADELANTE',
+                },
+                diaSemana: null,
+                fecha: null,
+                ...body,
+            },
+            { status: 201 },
+        )
+    }),
+    http.put('*/asignaciones-espacio/:id', async ({ params, request }) => {
+        const id = Number(params.id)
+        const body = (await request.json()) as Record<string, unknown>
+        const base =
+            asignacionesEspacioFixture.find((a) => a.id === id) ??
+            asignacionesEspacioFixture[0]
+        return HttpResponse.json({ ...base, ...body, id })
+    }),
+    http.delete(
+        '*/asignaciones-espacio/:id',
         () => new HttpResponse(null, { status: 204 }),
     ),
 

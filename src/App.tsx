@@ -26,6 +26,12 @@ import { DetalleAgendaPage } from './pages/agendas/DetalleAgendaPage'
 import { EspaciosPage } from './pages/espacios/EspaciosPage'
 import { CrearEspacioPage } from './pages/espacios/CrearEspacioPage'
 import { DetalleEspacioPage } from './pages/espacios/DetalleEspacioPage'
+import { TurnosPage } from './pages/turnos/TurnosPage'
+import { CrearTurnoPage } from './pages/turnos/CrearTurnoPage'
+import { DetalleTurnoPage } from './pages/turnos/DetalleTurnoPage'
+import { ProfesionalesPage } from './pages/profesionales/ProfesionalesPage'
+import { CrearProfesionalPage } from './pages/profesionales/CrearProfesionalPage'
+import { DetalleProfesionalPage } from './pages/profesionales/DetalleProfesionalPage'
 
 function App() {
     return (
@@ -226,6 +232,68 @@ function App() {
                                 roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
                             >
                                 <DetalleEspacioPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="turnos"
+                        element={
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
+                                <TurnosPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="turnos/nuevo"
+                        element={
+                            <RutaPorRol roles={['ADMIN', 'PACIENTE']}>
+                                <CrearTurnoPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="turnos/:id"
+                        element={
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
+                                <DetalleTurnoPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="profesionales"
+                        element={
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
+                                <ProfesionalesPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="profesionales/nuevo"
+                        element={
+                            <RutaPorRol roles={['ADMIN']}>
+                                <CrearProfesionalPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="profesionales/:id"
+                        element={
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
+                                <DetalleProfesionalPage />
                             </RutaPorRol>
                         }
                     />

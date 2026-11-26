@@ -217,7 +217,7 @@ function App() {
                     <Route
                         path="turnos/nuevo"
                         element={
-                            <RutaPorRol roles={['ADMIN']}>
+                            <RutaPorRol roles={['ADMIN', 'PACIENTE']}>
                                 <CrearTurnoPage />
                             </RutaPorRol>
                         }
@@ -237,7 +237,9 @@ function App() {
                     <Route
                         path="profesionales"
                         element={
-                            <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
                                 <ProfesionalesPage />
                             </RutaPorRol>
                         }
@@ -255,7 +257,9 @@ function App() {
                     <Route
                         path="profesionales/:id"
                         element={
-                            <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
+                            <RutaPorRol
+                                roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
+                            >
                                 <DetalleProfesionalPage />
                             </RutaPorRol>
                         }

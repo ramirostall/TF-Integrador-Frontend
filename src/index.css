@@ -294,3 +294,41 @@ th {
         color: #f87171;
     }
 }
+
+/* Profesionales: listado en tarjetas */
+.tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+}
+
+.tarjeta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.tarjeta h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.tarjeta p {
+    margin: 0;
+}
+
+/* Turnos: filtros del ADMIN */
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+    text-align: left;
+}

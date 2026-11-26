@@ -1,5 +1,6 @@
 import type { Agenda } from '../../types/agenda'
 import type { Paciente } from '../../types/paciente'
+import type { Espacio } from '../../types/espacio'
 import type { Profesional } from '../../types/profesional'
 import type { HorarioLibre, Turno } from '../../types/turno'
 import type { Usuario } from '../../types/usuario'
@@ -56,6 +57,27 @@ const profesionalAgendaFixture = {
     matricula: 'MP-1234',
     especialidad: 'Kinesiologia',
 }
+
+export const espaciosFixture: Espacio[] = [
+    {
+        id: 1,
+        nombre: 'Gimnasio Adelante',
+        tipo: 'GIMNASIO',
+        ubicacion: 'ADELANTE',
+        activo: true,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+    },
+    {
+        id: 2,
+        nombre: 'Consultorio Atras',
+        tipo: 'CONSULTORIO',
+        ubicacion: 'ATRAS',
+        activo: false,
+        createdAt: '2026-01-02T00:00:00Z',
+        updatedAt: '2026-01-02T00:00:00Z',
+    },
+]
 
 export const agendasFixture: Agenda[] = [
     {

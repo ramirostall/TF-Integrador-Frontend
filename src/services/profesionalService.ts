@@ -1,16 +1,13 @@
 import { api } from './api'
 import type {
     Profesional,
+    ProfesionalResumen,
     CrearProfesional,
     ActualizarProfesional,
 } from '../types/profesional'
 
-export interface ProfesionalOpcion {
-    id: number
-    nombre: string
-    apellido: string
-    especialidad: string
-}
+// Alias que usan los selects de Agendas y Autorizaciones.
+export type ProfesionalOpcion = ProfesionalResumen
 
 export async function listarProfesionales(): Promise<Profesional[]> {
     const respuesta = await api.get<Profesional[]>('/profesionales')
@@ -36,16 +33,5 @@ export async function modificarProfesional(
     datos: ActualizarProfesional,
 ): Promise<Profesional> {
     const respuesta = await api.put<Profesional>(`/profesionales/${id}`, datos)
-    return respuesta.data
-}
-
-export async function desactivarProfesional(id: number): Promise<void> {
-    await api.patch(`/profesionales/${id}/desactivar`)
-}
-
-export async function activarProfesional(id: number): Promise<Profesional> {
-    const respuesta = await api.patch<Profesional>(
-        `/profesionales/${id}/activar`,
-    )
     return respuesta.data
 }

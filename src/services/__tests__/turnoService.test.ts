@@ -6,6 +6,7 @@ import {
     crearTurno,
     listarTurnos,
     modificarTurno,
+    obtenerHorariosLibres,
     obtenerTurnoPorId,
 } from '../turnoService'
 
@@ -31,10 +32,10 @@ const turnoBase = {
     pacienteId: 20,
     agendaId: 5,
     fecha: '2026-02-15',
-    hora: '10:00',
-    duracion: 30,
+    hora: '10:00:00',
     estado: 'PENDIENTE',
-    notas: 'Control de rutina',
+    motivo: 'Control de rutina',
+    observaciones: null,
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
 }
@@ -76,8 +77,8 @@ describe('turnoService', () => {
             agendaId: 5,
             fecha: '2026-02-15',
             hora: '10:00',
-            duracion: 30,
-            notas: 'Control de rutina',
+            motivo: 'Control de rutina',
+            observaciones: 'Traer estudios',
         }
         mockedApi.post.mockResolvedValue(response({ ...turnoBase, ...payload }))
 
@@ -96,13 +97,29 @@ describe('turnoService', () => {
         expect(mockedApi.put).toHaveBeenCalledWith('/turnos/1', payload)
     })
 
-    it('cancelarTurno hace PATCH /turnos/:id/cancelar', async () => {
-        mockedApi.patch.mockResolvedValue(
+    it('obtenerHorariosLibres hace GET /turnos/horarios-libres con params', async () => {
+        const data = [
+            { agendaId: 5, hora: '09:00' },
+            { agendaId: 5, hora: '09:30' },
+        ]
+        mockedApi.get.mockResolvedValue(response(data))
+
+        await expect(obtenerHorariosLibres(10, '2026-02-16')).resolves.toEqual(
+            data,
+        )
+        expect(mockedApi.get).toHaveBeenCalledWith('/turnos/horarios-libres', {
+            params: { profesionalId: 10, fecha: '2026-02-16' },
+        })
+    })
+
+    it('cancelarTurno hace DELETE /turnos/:id', async () => {
+        mockedApi.delete.mockResolvedValue(
             response({ ...turnoBase, estado: 'CANCELADO' }),
         )
         await expect(cancelarTurno(1)).resolves.toMatchObject({
             estado: 'CANCELADO',
         })
-        expect(mockedApi.patch).toHaveBeenCalledWith('/turnos/1/cancelar')
+        expect(mockedApi.delete).toHaveBeenCalledWith('/turnos/1')
+        expect(mockedApi.patch).not.toHaveBeenCalled()
     })
 })

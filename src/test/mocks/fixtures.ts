@@ -4,6 +4,7 @@ import type { Espacio } from '../../types/espacio'
 import type { Profesional } from '../../types/profesional'
 import type { HorarioLibre, Turno } from '../../types/turno'
 import type { Usuario } from '../../types/usuario'
+import type { AutorizacionEstudio } from '../../types/estudio'
 import type { Estudio } from '../../types/estudio'
 
 export const usuariosFixture: Usuario[] = [
@@ -189,6 +190,37 @@ export const turnosFixture: Turno[] = [
 export const horariosLibresFixture: HorarioLibre[] = [
     { agendaId: 1, hora: '09:30' },
     { agendaId: 1, hora: '10:00' },
+]
+
+export const autorizacionesFixture: AutorizacionEstudio[] = [
+    {
+        id: 1,
+        estudioId: 2,
+        profesionalId: 1,
+        fechaAutorizacion: '2026-03-06',
+        fechaVencimiento: '2026-09-06',
+        estado: 'DISPONIBLE',
+        profesional: {
+            id: 1,
+            nombre: 'Ana',
+            apellido: 'Lopez',
+            especialidad: 'Kinesiologia',
+        },
+    },
+    {
+        id: 2,
+        estudioId: 1,
+        profesionalId: 2,
+        fechaAutorizacion: '2026-01-15',
+        fechaVencimiento: '2026-07-15',
+        estado: 'VENCIDO',
+        profesional: {
+            id: 2,
+            nombre: 'Carlos',
+            apellido: 'Ruiz',
+            especialidad: 'Cardiologia',
+        },
+    },
 ]
 
 export const estudiosFixture: Estudio[] = [

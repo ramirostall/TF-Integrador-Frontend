@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import {
     agendasFixture,
+    autorizacionesFixture,
     estudiosFixture,
     horariosLibresFixture,
     espaciosFixture,
@@ -148,6 +149,40 @@ export const handlers = [
         return HttpResponse.json({
             url: `https://archivos.test.com/estudios/${id}/download`,
             expiresIn: 3600,
+        })
+    }),
+
+    http.get('*/autorizacionestudios', () =>
+        HttpResponse.json(autorizacionesFixture),
+    ),
+    http.get('*/autorizacionestudios/:id', ({ params }) => {
+        const id = Number(params.id)
+        const autorizacion = autorizacionesFixture.find((a) => a.id === id)
+        return autorizacion
+            ? HttpResponse.json(autorizacion)
+            : HttpResponse.json({ mensaje: 'No encontrado' }, { status: 404 })
+    }),
+    http.post('*/autorizacionestudios', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json(
+            { id: 99, estado: 'DISPONIBLE', ...body },
+            { status: 201 },
+        )
+    }),
+    http.patch('*/autorizacionestudios/:id/revocar', ({ params }) => {
+        const id = Number(params.id)
+        const base = autorizacionesFixture.find((a) => a.id === id) || {
+            id,
+            estado: 'DISPONIBLE',
+        }
+        return HttpResponse.json({ ...base, estado: 'VENCIDO' })
+    }),
+    http.get('*/autorizacionestudios/:id/vigencia', ({ params }) => {
+        const id = Number(params.id)
+        return HttpResponse.json({
+            id,
+            estaVigente: true,
+            estaVencida: false,
         })
     }),
 

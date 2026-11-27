@@ -1,6 +1,7 @@
 import type { Agenda } from '../../types/agenda'
 import type { Paciente } from '../../types/paciente'
 import type { Espacio } from '../../types/espacio'
+import type { AsignacionEspacio } from '../../types/asignacionEspacio'
 import type { Profesional } from '../../types/profesional'
 import type { HorarioLibre, Turno } from '../../types/turno'
 import type { Usuario } from '../../types/usuario'
@@ -78,6 +79,47 @@ export const espaciosFixture: Espacio[] = [
         activo: false,
         createdAt: '2026-01-02T00:00:00Z',
         updatedAt: '2026-01-02T00:00:00Z',
+    },
+]
+
+export const asignacionesEspacioFixture: AsignacionEspacio[] = [
+    {
+        id: 1,
+        profesionalId: 1,
+        espacioId: 1,
+        tipo: 'FIJA',
+        diaSemana: 'LUNES',
+        fecha: null,
+        horaInicio: '09:00:00',
+        horaFin: '12:00:00',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+        profesional: { id: 1, nombre: 'Ana', apellido: 'Lopez' },
+        espacio: {
+            id: 1,
+            nombre: 'Gimnasio Adelante',
+            tipo: 'GIMNASIO',
+            ubicacion: 'ADELANTE',
+        },
+    },
+    {
+        id: 2,
+        profesionalId: 2,
+        espacioId: 2,
+        tipo: 'ESPECIFICA',
+        diaSemana: null,
+        fecha: '2030-01-10',
+        horaInicio: '14:00:00',
+        horaFin: '16:00:00',
+        createdAt: '2026-01-02T00:00:00Z',
+        updatedAt: '2026-01-02T00:00:00Z',
+        profesional: { id: 2, nombre: 'Carlos', apellido: 'Ruiz' },
+        espacio: {
+            id: 2,
+            nombre: 'Consultorio Atras',
+            tipo: 'CONSULTORIO',
+            ubicacion: 'ATRAS',
+        },
     },
 ]
 

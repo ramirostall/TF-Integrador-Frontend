@@ -25,6 +25,10 @@ export function Layout() {
                     <Link to="/estudios">Estudios</Link>
                     <Link to="/agendas">Agendas</Link>
                     <Link to="/espacios">Espacios</Link>
+                    {(usuario?.rol === 'ADMIN' ||
+                        usuario?.rol === 'PROFESIONAL') && (
+                        <Link to="/asignaciones-espacio">Asignaciones</Link>
+                    )}
                     <Link to="/profesionales">Profesionales</Link>
                     <Link to="/turnos">Turnos</Link>
 

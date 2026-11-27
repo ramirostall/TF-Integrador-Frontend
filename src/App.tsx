@@ -26,6 +26,9 @@ import { DetalleAgendaPage } from './pages/agendas/DetalleAgendaPage'
 import { EspaciosPage } from './pages/espacios/EspaciosPage'
 import { CrearEspacioPage } from './pages/espacios/CrearEspacioPage'
 import { DetalleEspacioPage } from './pages/espacios/DetalleEspacioPage'
+import { AsignacionesEspacioPage } from './pages/asignaciones-espacio/AsignacionesEspacioPage'
+import { CrearAsignacionEspacioPage } from './pages/asignaciones-espacio/CrearAsignacionEspacioPage'
+import { DetalleAsignacionEspacioPage } from './pages/asignaciones-espacio/DetalleAsignacionEspacioPage'
 import { TurnosPage } from './pages/turnos/TurnosPage'
 import { CrearTurnoPage } from './pages/turnos/CrearTurnoPage'
 import { DetalleTurnoPage } from './pages/turnos/DetalleTurnoPage'
@@ -232,6 +235,33 @@ function App() {
                                 roles={['ADMIN', 'PROFESIONAL', 'PACIENTE']}
                             >
                                 <DetalleEspacioPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="asignaciones-espacio"
+                        element={
+                            <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
+                                <AsignacionesEspacioPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="asignaciones-espacio/nuevo"
+                        element={
+                            <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
+                                <CrearAsignacionEspacioPage />
+                            </RutaPorRol>
+                        }
+                    />
+
+                    <Route
+                        path="asignaciones-espacio/:id"
+                        element={
+                            <RutaPorRol roles={['ADMIN', 'PROFESIONAL']}>
+                                <DetalleAsignacionEspacioPage />
                             </RutaPorRol>
                         }
                     />

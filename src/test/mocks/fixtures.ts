@@ -5,6 +5,8 @@ import type { AsignacionEspacio } from '../../types/asignacionEspacio'
 import type { Profesional } from '../../types/profesional'
 import type { HorarioLibre, Turno } from '../../types/turno'
 import type { Usuario } from '../../types/usuario'
+import type { AutorizacionEstudio } from '../../types/estudio'
+import type { Estudio } from '../../types/estudio'
 
 export const usuariosFixture: Usuario[] = [
     { id: 1, email: 'admin@test.com', rol: 'ADMIN', activo: true },
@@ -230,4 +232,77 @@ export const turnosFixture: Turno[] = [
 export const horariosLibresFixture: HorarioLibre[] = [
     { agendaId: 1, hora: '09:30' },
     { agendaId: 1, hora: '10:00' },
+]
+
+export const autorizacionesFixture: AutorizacionEstudio[] = [
+    {
+        id: 1,
+        estudioId: 2,
+        profesionalId: 1,
+        fechaAutorizacion: '2026-03-06',
+        fechaVencimiento: '2026-09-06',
+        estado: 'DISPONIBLE',
+        profesional: {
+            id: 1,
+            nombre: 'Ana',
+            apellido: 'Lopez',
+            especialidad: 'Kinesiologia',
+        },
+    },
+    {
+        id: 2,
+        estudioId: 1,
+        profesionalId: 2,
+        fechaAutorizacion: '2026-01-15',
+        fechaVencimiento: '2026-07-15',
+        estado: 'VENCIDO',
+        profesional: {
+            id: 2,
+            nombre: 'Carlos',
+            apellido: 'Ruiz',
+            especialidad: 'Cardiologia',
+        },
+    },
+]
+
+export const estudiosFixture: Estudio[] = [
+    {
+        id: 1,
+        pacienteId: 10,
+        tipo: 'Hemograma completo',
+        fecha: '2026-02-10',
+        descripcion: 'Control de rutina',
+        archivoURL: null,
+        createdAt: '2026-02-10T08:00:00Z',
+        updatedAt: '2026-02-10T08:00:00Z',
+        paciente: pacientesFixture[0],
+        autorizaciones: [],
+    },
+    {
+        id: 2,
+        pacienteId: 11,
+        tipo: 'Radiografía de tórax',
+        fecha: '2026-03-05',
+        descripcion: 'Seguimiento post operatorio',
+        archivoURL: 'https://archivos.test.com/estudios/2.pdf',
+        createdAt: '2026-03-05T10:00:00Z',
+        updatedAt: '2026-03-05T10:00:00Z',
+        paciente: pacientesFixture[1],
+        autorizaciones: [
+            {
+                id: 1,
+                estudioId: 2,
+                profesionalId: 1,
+                fechaAutorizacion: '2026-03-06',
+                fechaVencimiento: '2026-09-06',
+                estado: 'DISPONIBLE',
+                profesional: {
+                    id: 1,
+                    nombre: 'Ana',
+                    apellido: 'Lopez',
+                    especialidad: 'Kinesiologia',
+                },
+            },
+        ],
+    },
 ]

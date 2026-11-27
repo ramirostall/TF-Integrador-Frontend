@@ -1,6 +1,8 @@
 import { http, HttpResponse } from 'msw'
 import {
     agendasFixture,
+    autorizacionesFixture,
+    estudiosFixture,
     asignacionesEspacioFixture,
     horariosLibresFixture,
     espaciosFixture,
@@ -93,6 +95,97 @@ export const handlers = [
         '*/pacientes/:id',
         () => new HttpResponse(null, { status: 204 }),
     ),
+
+    http.get('*/estudios', () => HttpResponse.json(estudiosFixture)),
+    http.get('*/estudios/paciente/:pacienteId', ({ params }) => {
+        const pacienteId = Number(params.pacienteId)
+        return HttpResponse.json(
+            estudiosFixture.filter((e) => e.pacienteId === pacienteId),
+        )
+    }),
+    http.get('*/estudios/:id', ({ params }) => {
+        const id = Number(params.id)
+        const estudio = estudiosFixture.find((e) => e.id === id)
+        return estudio
+            ? HttpResponse.json(estudio)
+            : HttpResponse.json({ mensaje: 'No encontrado' }, { status: 404 })
+    }),
+    http.post('*/estudios', async ({ request }) => {
+        const formData = await request.formData()
+        return HttpResponse.json(
+            {
+                id: 99,
+                pacienteId: Number(formData.get('pacienteId')),
+                tipo: String(formData.get('tipo')),
+                fecha: String(formData.get('fecha')),
+                descripcion: String(formData.get('descripcion')),
+                archivoURL: formData.get('archivo')
+                    ? 'https://archivos.test.com/estudios/99.pdf'
+                    : null,
+                createdAt: '2026-01-01T00:00:00Z',
+                updatedAt: '2026-01-01T00:00:00Z',
+            },
+            { status: 201 },
+        )
+    }),
+    http.put('*/estudios/:id/archivo', async ({ params, request }) => {
+        const id = Number(params.id)
+        const formData = await request.formData()
+        const archivo = formData.get('archivo')
+        return HttpResponse.json({
+            id,
+            pacienteId: 10,
+            tipo: 'Hemograma completo',
+            fecha: '2026-02-10',
+            descripcion: 'Control de rutina',
+            archivoURL: archivo
+                ? `https://archivos.test.com/estudios/${id}/archivo.pdf`
+                : null,
+            createdAt: '2026-02-10T08:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
+        })
+    }),
+    http.get('*/estudios/:id/archivo', ({ params }) => {
+        const id = Number(params.id)
+        return HttpResponse.json({
+            url: `https://archivos.test.com/estudios/${id}/download`,
+            expiresIn: 3600,
+        })
+    }),
+
+    http.get('*/autorizacionestudios', () =>
+        HttpResponse.json(autorizacionesFixture),
+    ),
+    http.get('*/autorizacionestudios/:id', ({ params }) => {
+        const id = Number(params.id)
+        const autorizacion = autorizacionesFixture.find((a) => a.id === id)
+        return autorizacion
+            ? HttpResponse.json(autorizacion)
+            : HttpResponse.json({ mensaje: 'No encontrado' }, { status: 404 })
+    }),
+    http.post('*/autorizacionestudios', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json(
+            { id: 99, estado: 'DISPONIBLE', ...body },
+            { status: 201 },
+        )
+    }),
+    http.patch('*/autorizacionestudios/:id/revocar', ({ params }) => {
+        const id = Number(params.id)
+        const base = autorizacionesFixture.find((a) => a.id === id) || {
+            id,
+            estado: 'DISPONIBLE',
+        }
+        return HttpResponse.json({ ...base, estado: 'VENCIDO' })
+    }),
+    http.get('*/autorizacionestudios/:id/vigencia', ({ params }) => {
+        const id = Number(params.id)
+        return HttpResponse.json({
+            id,
+            estaVigente: true,
+            estaVencida: false,
+        })
+    }),
 
     http.get('*/agendas', () => HttpResponse.json(agendasFixture)),
     http.get('*/agendas/profesional/:profesionalId', ({ params }) => {
